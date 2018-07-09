@@ -5,6 +5,7 @@ interface FlowNodeInstanceAttributes {
   instanceId: string;
   flowNodeId: string;
   token: string;
+  isSuspended: boolean;
 }
 
 type FlowNodeInstance = Sequelize.Instance<FlowNodeInstanceAttributes> & FlowNodeInstanceAttributes;
@@ -27,6 +28,11 @@ export function sequelizeFlowNodeInstance(sequelize: Sequelize.Sequelize): any {
     token: {
       type: Sequelize.STRING,
       allowNull: false,
+    },
+    isSuspended: {
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
     },
   };
 
