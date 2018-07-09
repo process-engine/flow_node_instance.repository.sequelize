@@ -14,6 +14,7 @@
   ],
   "dependencies": {
     "@essential-projects/errors_ts": "^1.2.0",
+    "@essential-projects/iam_contracts": "^3.0.0",
     "@process-engine/process_engine_contracts": "feature~implement_persistence_layer",
     "loggerhythm": "^3.0.3",
     "pg": "^7.4.3",
