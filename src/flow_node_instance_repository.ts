@@ -71,4 +71,32 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
   public async resume(flowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
     throw new Error('Not implemented.');
   }
+
+  private _convertFlowNodeInstanceToRuntimeObject(dataModel: FlowNodeInstanceModel): Runtime.Types.FlowNodeInstance {
+
+    const runtimeFlowNodeInstance: Runtime.Types.FlowNodeInstance = new Runtime.Types.FlowNodeInstance();
+    runtimeFlowNodeInstance.id = dataModel.instanceId;
+    runtimeFlowNodeInstance.flowNodeId = dataModel.flowNodeId;
+    runtimeFlowNodeInstance.isSuspended = dataModel.isSuspended;
+
+    const processToken: Runtime.Types.ProcessToken = this._convertProcessTokenToRuntimeObject((dataModel as any).processToken);
+
+    runtimeFlowNodeInstance.token = processToken;
+
+    return runtimeFlowNodeInstance;
+  }
+
+  private _convertProcessTokenToRuntimeObject(dataModel: ProcessToken): Runtime.Types.ProcessToken {
+
+    const processToken: Runtime.Types.ProcessToken = new Runtime.Types.ProcessToken();
+    processToken.processInstanceId = dataModel.processInstanceId;
+    processToken.processModelId = dataModel.processModelId;
+    processToken.correlationId = dataModel.correlationId;
+    processToken.identity = JSON.parse(dataModel.identity);
+    processToken.createdAt = dataModel.createdAt;
+    processToken.caller = dataModel.caller;
+    processToken.payload = dataModel.payload;
+
+    return processToken;
+  }
 }
