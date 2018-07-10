@@ -24,7 +24,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
 
   private sequelize: Sequelize.Sequelize;
 
-  private flowNodeInstanceModel(): Sequelize.Model<FlowNodeInstanceModel, IFlowNodeInstanceAttributes> {
+  private get flowNodeInstanceModel(): Sequelize.Model<FlowNodeInstanceModel, IFlowNodeInstanceAttributes> {
     return this._flowNodeInstanceModel;
   }
 
@@ -36,19 +36,81 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
   }
 
   public async queryByCorrelation(correlationId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
-    throw new Error('Not implemented.');
+
+    const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
+      include: [{
+        model: this.sequelize.models.ProcessToken,
+        as: 'processToken',
+        where: {
+          correlationId: correlationId,
+        },
+        required: true,
+      }],
+    });
+
+    const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject);
+
+    return flowNodeInstances;
   }
 
   public async queryByProcessModel(processModelId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
-    throw new Error('Not implemented.');
+
+    const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
+      include: [{
+        model: this.sequelize.models.ProcessToken,
+        as: 'processToken',
+        where: {
+          processModelId: processModelId,
+        },
+        required: true,
+      }],
+    });
+
+    const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject);
+
+    return flowNodeInstances;
   }
 
   public async querySuspendedByCorrelation(correlationId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
-    throw new Error('Not implemented.');
+
+    const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
+      where: {
+        isSuspended: true,
+      },
+      include: [{
+        model: this.sequelize.models.ProcessToken,
+        as: 'processToken',
+        where: {
+          correlationId: correlationId,
+        },
+        required: true,
+      }],
+    });
+
+    const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject);
+
+    return flowNodeInstances;
   }
 
   public async querySuspendedByProcessModel(processModelId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
-    throw new Error('Not implemented.');
+
+    const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
+      where: {
+        isSuspended: true,
+      },
+      include: [{
+        model: this.sequelize.models.ProcessToken,
+        as: 'processToken',
+        where: {
+          processModelId: processModelId,
+        },
+        required: true,
+      }],
+    });
+
+    const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject);
+
+    return flowNodeInstances;
   }
 
   public async persistOnEnter(token: Runtime.Types.ProcessToken,
