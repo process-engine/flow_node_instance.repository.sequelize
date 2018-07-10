@@ -4,7 +4,12 @@ import {IFlowNodeInstanceRepository, Runtime} from '@process-engine/process_engi
 import * as Sequelize from 'sequelize';
 
 import {loadModels} from './model_loader';
-import {FlowNodeInstance as FlowNodeInstanceModel, IFlowNodeInstanceAttributes, ProcessToken} from './schemas';
+import {
+  FlowNodeInstance as FlowNodeInstanceModel,
+  IFlowNodeInstanceAttributes,
+  IProcessTokenAttributes,
+  ProcessToken,
+} from './schemas';
 
 export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
 
@@ -21,6 +26,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
   // }
 
   private _flowNodeInstanceModel: Sequelize.Model<FlowNodeInstanceModel, IFlowNodeInstanceAttributes>;
+  private _processTokenModel: Sequelize.Model<ProcessToken, IProcessTokenAttributes>;
 
   private sequelize: Sequelize.Sequelize;
 
@@ -28,18 +34,36 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     return this._flowNodeInstanceModel;
   }
 
+  private get processTokenModel(): Sequelize.Model<ProcessToken, IProcessTokenAttributes> {
+    return this._processTokenModel;
+  }
+
   public async initialize(): Promise<void> {
     this.sequelize = await getConnection(this.config.database, this.config.username, this.config.password, this.config);
     await loadModels(this.sequelize);
 
     this._flowNodeInstanceModel = this.sequelize.models.FlowNodeInstance;
+    this._processTokenModel = this.sequelize.models.ProcessToken;
+  }
+
+  public async persistOnEnter(token: Runtime.Types.ProcessToken,
+                              flowNodeId: string,
+                              flowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
+
+    throw new Error('Not implemented.');
+  }
+
+  public async persistOnExit(token: Runtime.Types.ProcessToken,
+                             flowNodeId: string,
+                             flowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
+    throw new Error('Not implemented.');
   }
 
   public async queryByCorrelation(correlationId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
 
     const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
       include: [{
-        model: this.sequelize.models.ProcessToken,
+        model: this.processTokenModel,
         as: 'processToken',
         where: {
           correlationId: correlationId,
@@ -57,7 +81,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
 
     const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
       include: [{
-        model: this.sequelize.models.ProcessToken,
+        model: this.processTokenModel,
         as: 'processToken',
         where: {
           processModelId: processModelId,
@@ -78,7 +102,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
         isSuspended: true,
       },
       include: [{
-        model: this.sequelize.models.ProcessToken,
+        model: this.processTokenModel,
         as: 'processToken',
         where: {
           correlationId: correlationId,
@@ -99,7 +123,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
         isSuspended: true,
       },
       include: [{
-        model: this.sequelize.models.ProcessToken,
+        model: this.processTokenModel,
         as: 'processToken',
         where: {
           processModelId: processModelId,
@@ -113,27 +137,55 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     return flowNodeInstances;
   }
 
-  public async persistOnEnter(token: Runtime.Types.ProcessToken,
-                              flowNodeId: string,
-                              flowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
+  public async suspend(newProcessToken: Runtime.Types.ProcessToken,
+                       flowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
 
-    throw new Error('Not implemented.');
-  }
+    const matchingFlowNodeInstance: FlowNodeInstanceModel = await this.flowNodeInstanceModel.findOne({
+      where: {
+        instanceId: flowNodeInstanceId,
+      },
+      include: [{
+        model: this.processTokenModel,
+        as: 'processToken',
+        required: true,
+      }],
+    });
 
-  public async persistOnExit(token: Runtime.Types.ProcessToken,
-                             flowNodeId: string,
-                             flowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
-    throw new Error('Not implemented.');
-  }
+    if (!matchingFlowNodeInstance) {
+      throw new Error(`flow node with instance id '${flowNodeInstanceId}' not found!`);
+    }
 
-  public async suspend(token: Runtime.Types.ProcessToken,
-                       flowNodeInstanceId: string,
-                       correlationHash?: string): Promise<Runtime.Types.FlowNodeInstance> {
-    throw new Error('Not implemented.');
+    matchingFlowNodeInstance.isSuspended = true;
+
+    const currentToken: ProcessToken = (matchingFlowNodeInstance as any).processToken;
+    const updatedToken: ProcessToken = Object.assign(currentToken, newProcessToken);
+    updatedToken.identity = JSON.stringify(newProcessToken.identity);
+
+    (matchingFlowNodeInstance as any).processToken = updatedToken;
+    matchingFlowNodeInstance.save();
+    const runtimeFlowNodeInstance: Runtime.Types.FlowNodeInstance = this._convertFlowNodeInstanceToRuntimeObject(matchingFlowNodeInstance);
+
+    return runtimeFlowNodeInstance;
   }
 
   public async resume(flowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
-    throw new Error('Not implemented.');
+
+    const matchingFlowNodeInstance: FlowNodeInstanceModel = await this.flowNodeInstanceModel.findOne({
+      where: {
+        instanceId: flowNodeInstanceId,
+      },
+    });
+
+    if (!matchingFlowNodeInstance) {
+      throw new Error(`flow node with instance id '${flowNodeInstanceId}' not found!`);
+    }
+
+    matchingFlowNodeInstance.isSuspended = false;
+    matchingFlowNodeInstance.save();
+
+    const runtimeFlowNodeInstance: Runtime.Types.FlowNodeInstance = this._convertFlowNodeInstanceToRuntimeObject(matchingFlowNodeInstance);
+
+    return runtimeFlowNodeInstance;
   }
 
   private _convertFlowNodeInstanceToRuntimeObject(dataModel: FlowNodeInstanceModel): Runtime.Types.FlowNodeInstance {
