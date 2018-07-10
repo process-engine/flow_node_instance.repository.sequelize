@@ -50,13 +50,58 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
                               flowNodeId: string,
                               flowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
 
-    throw new Error('Not implemented.');
+    const persistableToken: any = Object.assign({}, token);
+    persistableToken.identity = JSON.stringify(token.identity);
+
+    const createParams: any = {
+      flowNodeId: flowNodeId,
+      instanceId: flowNodeInstanceId,
+      isSuspended: false,
+      processToken: persistableToken,
+    };
+
+    const result: FlowNodeInstanceModel = await this.flowNodeInstanceModel.create(
+      createParams, {
+      include: [{
+        model: this.processTokenModel,
+        as: 'processToken',
+      }],
+    });
+
+    const flowNodeInstance: Runtime.Types.FlowNodeInstance = this._convertFlowNodeInstanceToRuntimeObject(result);
+
+    return flowNodeInstance;
   }
 
-  public async persistOnExit(token: Runtime.Types.ProcessToken,
+  public async persistOnExit(newProcessToken: Runtime.Types.ProcessToken,
                              flowNodeId: string,
                              flowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
-    throw new Error('Not implemented.');
+
+    const matchingFlowNodeInstance: FlowNodeInstanceModel = await this.flowNodeInstanceModel.findOne({
+      where: {
+        flowNodeId: flowNodeId,
+        instanceId: flowNodeInstanceId,
+      },
+      include: [{
+        model: this.processTokenModel,
+        as: 'processToken',
+        required: true,
+      }],
+    });
+
+    if (!matchingFlowNodeInstance) {
+      throw new Error(`flow node with instance id '${flowNodeInstanceId}' not found!`);
+    }
+
+    const currentToken: ProcessToken = (matchingFlowNodeInstance as any).processToken;
+    const updatedToken: ProcessToken = Object.assign(currentToken, newProcessToken);
+    updatedToken.identity = JSON.stringify(newProcessToken.identity);
+
+    (matchingFlowNodeInstance as any).processToken = updatedToken;
+    matchingFlowNodeInstance.save();
+    const runtimeFlowNodeInstance: Runtime.Types.FlowNodeInstance = this._convertFlowNodeInstanceToRuntimeObject(matchingFlowNodeInstance);
+
+    return runtimeFlowNodeInstance;
   }
 
   public async queryByCorrelation(correlationId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
