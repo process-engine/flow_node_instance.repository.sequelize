@@ -1,6 +1,6 @@
 import * as Sequelize from 'sequelize';
 
-interface ProcessTokenAttributes {
+export interface IProcessTokenAttributes {
   id: string;
   processInstanceId: string;
   processModelId: string;
@@ -11,10 +11,10 @@ interface ProcessTokenAttributes {
   payload: string; // Contains the stringified payload
 }
 
-type ProcessToken = Sequelize.Instance<ProcessTokenAttributes> & ProcessTokenAttributes;
+export type ProcessToken = Sequelize.Instance<IProcessTokenAttributes> & IProcessTokenAttributes;
 
-export function sequelizeProcessToken(sequelize: Sequelize.Sequelize): any {
-  const attributes: SequelizeAttributes<ProcessTokenAttributes> = {
+export function defineProcessToken(sequelize: Sequelize.Sequelize): Sequelize.Model<ProcessToken, IProcessTokenAttributes> {
+  const attributes: SequelizeAttributes<IProcessTokenAttributes> = {
     id: {
       type: Sequelize.UUID,
       primaryKey: true,
@@ -50,5 +50,5 @@ export function sequelizeProcessToken(sequelize: Sequelize.Sequelize): any {
     },
   };
 
-  return sequelize.define<ProcessToken, ProcessTokenAttributes>('ProcessToken', attributes);
+  return sequelize.define<ProcessToken, IProcessTokenAttributes>('ProcessToken', attributes);
 }

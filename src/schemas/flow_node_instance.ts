@@ -1,17 +1,19 @@
 import * as Sequelize from 'sequelize';
+import {ProcessToken} from './process_token';
 
-interface FlowNodeInstanceAttributes {
+export interface IFlowNodeInstanceAttributes {
   id: string;
   instanceId: string;
   flowNodeId: string;
-  token: string;
+  processTokenId: string;
   isSuspended: boolean;
 }
 
-type FlowNodeInstance = Sequelize.Instance<FlowNodeInstanceAttributes> & FlowNodeInstanceAttributes;
+export type FlowNodeInstance = Sequelize.Instance<IFlowNodeInstanceAttributes> & IFlowNodeInstanceAttributes;
 
-export function sequelizeFlowNodeInstance(sequelize: Sequelize.Sequelize): any {
-  const attributes: SequelizeAttributes<FlowNodeInstanceAttributes> = {
+export function defineFlowNodeInstance(sequelize: Sequelize.Sequelize): Sequelize.Model<FlowNodeInstance, IFlowNodeInstanceAttributes> {
+
+  const attributes: SequelizeAttributes<IFlowNodeInstanceAttributes> = {
     id: {
       type: Sequelize.UUID,
       primaryKey: true,
@@ -25,8 +27,8 @@ export function sequelizeFlowNodeInstance(sequelize: Sequelize.Sequelize): any {
       type: Sequelize.STRING,
       allowNull: false,
     },
-    token: {
-      type: Sequelize.STRING,
+    processTokenId: {
+      type: Sequelize.INTEGER,
       allowNull: false,
     },
     isSuspended: {
@@ -36,5 +38,21 @@ export function sequelizeFlowNodeInstance(sequelize: Sequelize.Sequelize): any {
     },
   };
 
-  return sequelize.define<FlowNodeInstance, FlowNodeInstanceAttributes>('FlowNodeInstance', attributes);
+  // const flowNodeInstanceModel: Sequelize.Model<FlowNodeInstance, IFlowNodeInstanceAttributes>
+  //   = sequelize.define<FlowNodeInstance, IFlowNodeInstanceAttributes>(
+  //     'FlowNodeInstance',
+  //     attributes,
+  //     {
+  //       classMethods: {
+  //         associate: (models: Sequelize.Models): void => {
+  //           flowNodeInstanceModel.hasOne(models.ProcessToken, {
+  //             as: 'processToken',
+  //             foreignKey: 'flowNodeInstanceId',
+  //           });
+  //         },
+  //       },
+  //     },
+  //   );
+
+  return sequelize.define<FlowNodeInstance, IFlowNodeInstanceAttributes>('FlowNodeInstance', attributes);
 }
