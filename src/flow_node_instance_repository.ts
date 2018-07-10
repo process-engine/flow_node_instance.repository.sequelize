@@ -4,7 +4,7 @@ import {IFlowNodeInstanceRepository, Runtime} from '@process-engine/process_engi
 import * as Sequelize from 'sequelize';
 
 import {loadModels} from './model_loader';
-import {FlowNodeInstance as FlowNodeInstanceModel, ProcessToken} from './schemas';
+import {FlowNodeInstance as FlowNodeInstanceModel, IFlowNodeInstanceAttributes, ProcessToken} from './schemas';
 
 export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
 
@@ -20,17 +20,19 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
   //   "resetPasswordRequestTimeToLive": 12
   // }
 
-  private _flowNodeInstanceModel: FlowNodeInstanceModel;
+  private _flowNodeInstanceModel: Sequelize.Model<FlowNodeInstanceModel, IFlowNodeInstanceAttributes>;
 
   private sequelize: Sequelize.Sequelize;
 
-  private flowNodeInstanceModel(): FlowNodeInstanceModel {
+  private flowNodeInstanceModel(): Sequelize.Model<FlowNodeInstanceModel, IFlowNodeInstanceAttributes> {
     return this._flowNodeInstanceModel;
   }
 
   public async initialize(): Promise<void> {
     this.sequelize = await getConnection(this.config.database, this.config.username, this.config.password, this.config);
     await loadModels(this.sequelize);
+
+    this._flowNodeInstanceModel = this.sequelize.models.FlowNodeInstance;
   }
 
   public async queryByCorrelation(correlationId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {

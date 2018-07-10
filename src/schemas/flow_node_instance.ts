@@ -1,11 +1,9 @@
 import * as Sequelize from 'sequelize';
-import {ProcessToken} from './process_token';
 
 export interface IFlowNodeInstanceAttributes {
   id: string;
   instanceId: string;
   flowNodeId: string;
-  processTokenId: string;
   isSuspended: boolean;
 }
 
@@ -27,16 +25,14 @@ export function defineFlowNodeInstance(sequelize: Sequelize.Sequelize): Sequeliz
       type: Sequelize.STRING,
       allowNull: false,
     },
-    processTokenId: {
-      type: Sequelize.INTEGER,
-      allowNull: false,
-    },
     isSuspended: {
       type: Sequelize.BOOLEAN,
       allowNull: false,
       defaultValue: false,
     },
   };
+
+  return sequelize.define<FlowNodeInstance, IFlowNodeInstanceAttributes>('FlowNodeInstance', attributes);
 
   // const flowNodeInstanceModel: Sequelize.Model<FlowNodeInstance, IFlowNodeInstanceAttributes>
   //   = sequelize.define<FlowNodeInstance, IFlowNodeInstanceAttributes>(
@@ -53,6 +49,7 @@ export function defineFlowNodeInstance(sequelize: Sequelize.Sequelize): Sequeliz
   //       },
   //     },
   //   );
+  //
+  // return flowNodeInstanceModel;
 
-  return sequelize.define<FlowNodeInstance, IFlowNodeInstanceAttributes>('FlowNodeInstance', attributes);
 }
