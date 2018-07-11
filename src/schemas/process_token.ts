@@ -5,10 +5,10 @@ export interface IProcessTokenAttributes {
   processInstanceId: string;
   processModelId: string;
   correlationId: string;
-  identity: string; // Contains the stringified IIdentity
+  identity: string;
   createdAt: Date;
   caller?: string; // Only set, if the process token belongs to a subprocess
-  payload: string; // Contains the stringified payload
+  payload: string;
 }
 
 export type ProcessToken = Sequelize.Instance<IProcessTokenAttributes> & IProcessTokenAttributes;
