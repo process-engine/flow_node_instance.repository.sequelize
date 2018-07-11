@@ -33,7 +33,9 @@ export function defineProcessToken(sequelize: Sequelize.Sequelize): Sequelize.Mo
       allowNull: false,
     },
     identity: {
-      type: Sequelize.STRING,
+      // Note: Sequelize.STRING equals varchar(255).
+      // Depending on the type of token used, this can easily exceed 255 chars.
+      type: Sequelize.TEXT,
       allowNull: false,
     },
     createdAt: {
@@ -46,7 +48,8 @@ export function defineProcessToken(sequelize: Sequelize.Sequelize): Sequelize.Mo
       allowNull: true,
     },
     payload: {
-      type: Sequelize.STRING,
+      // NOTE: Use Sequelize.TEXT, since payloads can contain all kinds of things and could therefore exceed 255 chars.
+      type: Sequelize.TEXT,
       allowNull: true,
     },
   };
