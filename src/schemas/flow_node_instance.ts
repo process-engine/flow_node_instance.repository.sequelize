@@ -37,23 +37,4 @@ export function defineFlowNodeInstance(sequelize: Sequelize.Sequelize): Sequeliz
   };
 
   return sequelize.define<FlowNodeInstance, IFlowNodeInstanceAttributes>('FlowNodeInstance', attributes);
-
-  // const flowNodeInstanceModel: Sequelize.Model<FlowNodeInstance, IFlowNodeInstanceAttributes>
-  //   = sequelize.define<FlowNodeInstance, IFlowNodeInstanceAttributes>(
-  //     'FlowNodeInstance',
-  //     attributes,
-  //     {
-  //       classMethods: {
-  //         associate: (models: Sequelize.Models): void => {
-  //           flowNodeInstanceModel.hasOne(models.ProcessToken, {
-  //             as: 'processToken',
-  //             foreignKey: 'flowNodeInstanceId',
-  //           });
-  //         },
-  //       },
-  //     },
-  //   );
-  //
-  // return flowNodeInstanceModel;
-
 }
