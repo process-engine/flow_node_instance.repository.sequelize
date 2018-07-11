@@ -14,16 +14,6 @@ import {
 export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
 
   public config: any;
-  // {
-  //   "username": "admin",
-  //   "password": "admin",
-  //   "database": "processengine",
-  //   "host": "localhost",
-  //   "port": 45678,
-  //   "dialect": "postgres",
-  //   "supportBigNumbers": true,
-  //   "resetPasswordRequestTimeToLive": 12
-  // }
 
   private _flowNodeInstanceModel: Sequelize.Model<FlowNodeInstanceModel, IFlowNodeInstanceAttributes>;
   private _processTokenModel: Sequelize.Model<ProcessToken, IProcessTokenAttributes>;
@@ -43,21 +33,22 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     await loadModels(this.sequelize);
 
     this._flowNodeInstanceModel = this.sequelize.models.FlowNodeInstance;
-    this._processTokenModel = this.sequelize.models.ProcessToken;
+    this._processTokenModel = this.sequelize.models.ProcessTokenNew; // TODO: Rename as soon as the model is renamed
   }
 
-  public async persistOnEnter(token: Runtime.Types.ProcessToken,
+  public async persistOnEnter(processToken: Runtime.Types.ProcessToken,
                               flowNodeId: string,
                               flowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
 
-    const persistableToken: any = Object.assign({}, token);
-    persistableToken.identity = JSON.stringify(token.identity);
+    const persistableProcessToken: any = Object.assign({}, processToken);
+    persistableProcessToken.identity = JSON.stringify(persistableProcessToken.identity);
+    persistableProcessToken.payload = JSON.stringify(persistableProcessToken.payload);
 
     const createParams: any = {
       flowNodeId: flowNodeId,
       instanceId: flowNodeInstanceId,
       isSuspended: false,
-      processToken: persistableToken,
+      processToken: persistableProcessToken,
     };
 
     const result: FlowNodeInstanceModel = await this.flowNodeInstanceModel.create(
@@ -96,6 +87,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     const currentToken: ProcessToken = matchingFlowNodeInstance.processToken;
     const updatedToken: ProcessToken = Object.assign(currentToken, newProcessToken);
     updatedToken.identity = JSON.stringify(newProcessToken.identity);
+    updatedToken.payload = JSON.stringify(newProcessToken.payload);
 
     matchingFlowNodeInstance.processToken = updatedToken;
     matchingFlowNodeInstance.save();
@@ -204,7 +196,8 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
 
     const currentToken: ProcessToken = matchingFlowNodeInstance.processToken;
     const updatedToken: ProcessToken = Object.assign(currentToken, newProcessToken);
-    updatedToken.identity = JSON.stringify(newProcessToken.identity);
+    updatedToken.identity = JSON.stringify(updatedToken.identity);
+    updatedToken.payload = JSON.stringify(updatedToken.payload);
 
     matchingFlowNodeInstance.processToken = updatedToken;
     matchingFlowNodeInstance.save();
@@ -256,7 +249,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     processToken.identity = JSON.parse(dataModel.identity);
     processToken.createdAt = dataModel.createdAt;
     processToken.caller = dataModel.caller;
-    processToken.payload = dataModel.payload;
+    processToken.payload = JSON.parse(dataModel.payload);
 
     return processToken;
   }
