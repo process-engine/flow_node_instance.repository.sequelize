@@ -93,11 +93,11 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       throw new Error(`flow node with instance id '${flowNodeInstanceId}' not found!`);
     }
 
-    const currentToken: ProcessToken = (matchingFlowNodeInstance as any).processToken;
+    const currentToken: ProcessToken = matchingFlowNodeInstance.processToken;
     const updatedToken: ProcessToken = Object.assign(currentToken, newProcessToken);
     updatedToken.identity = JSON.stringify(newProcessToken.identity);
 
-    (matchingFlowNodeInstance as any).processToken = updatedToken;
+    matchingFlowNodeInstance.processToken = updatedToken;
     matchingFlowNodeInstance.save();
     const runtimeFlowNodeInstance: Runtime.Types.FlowNodeInstance = this._convertFlowNodeInstanceToRuntimeObject(matchingFlowNodeInstance);
 
@@ -202,11 +202,11 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
 
     matchingFlowNodeInstance.isSuspended = true;
 
-    const currentToken: ProcessToken = (matchingFlowNodeInstance as any).processToken;
+    const currentToken: ProcessToken = matchingFlowNodeInstance.processToken;
     const updatedToken: ProcessToken = Object.assign(currentToken, newProcessToken);
     updatedToken.identity = JSON.stringify(newProcessToken.identity);
 
-    (matchingFlowNodeInstance as any).processToken = updatedToken;
+    matchingFlowNodeInstance.processToken = updatedToken;
     matchingFlowNodeInstance.save();
     const runtimeFlowNodeInstance: Runtime.Types.FlowNodeInstance = this._convertFlowNodeInstanceToRuntimeObject(matchingFlowNodeInstance);
 
