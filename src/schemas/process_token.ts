@@ -54,17 +54,6 @@ export function defineProcessToken(sequelize: Sequelize.Sequelize): Sequelize.Mo
     },
   };
 
-  const definitionOptions: Sequelize.DefineOptions<ProcessToken> = {
-    hooks: {
-      beforeCreate: (processTokenData: ProcessToken, options: any): void => {
-        processTokenData.identity = JSON.stringify(processTokenData.identity);
-        if (processTokenData.payload) {
-          processTokenData.payload = JSON.stringify(processTokenData.payload);
-        }
-      },
-    },
-  };
-
   // TODO: Rename to `ProcessToken`, once the old datamodel with the same name is removed.
-  return sequelize.define<ProcessToken, IProcessTokenAttributes>('ProcessTokenNew', attributes, definitionOptions);
+  return sequelize.define<ProcessToken, IProcessTokenAttributes>('ProcessTokenNew', attributes);
 }

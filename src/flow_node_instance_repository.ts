@@ -109,7 +109,9 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       }],
     });
 
-    const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject);
+    // TODO - BUG: For some reason the "this" context gets lost here, unless a bind is made.
+    // This effect has thus far been observed only in those operations that involve the consumer api.
+    const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
 
     return flowNodeInstances;
   }
@@ -127,7 +129,8 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       }],
     });
 
-    const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject);
+    // TODO - BUG: For some reason the "this" context gets lost here, unless a bind is made.
+    const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
 
     return flowNodeInstances;
   }
@@ -148,7 +151,8 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       }],
     });
 
-    const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject);
+    // TODO - BUG: For some reason the "this" context gets lost here, unless a bind is made.
+    const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
 
     return flowNodeInstances;
   }
@@ -169,7 +173,8 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       }],
     });
 
-    const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject);
+    // TODO - BUG: For some reason the "this" context gets lost here, unless a bind is made.
+    const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
 
     return flowNodeInstances;
   }
@@ -233,7 +238,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     runtimeFlowNodeInstance.flowNodeId = dataModel.flowNodeId;
     runtimeFlowNodeInstance.isSuspended = dataModel.isSuspended;
 
-    const processToken: Runtime.Types.ProcessToken = this._convertProcessTokenToRuntimeObject((dataModel as any).processToken);
+    const processToken: Runtime.Types.ProcessToken = this._convertProcessTokenToRuntimeObject(dataModel.processToken);
 
     runtimeFlowNodeInstance.token = processToken;
 
