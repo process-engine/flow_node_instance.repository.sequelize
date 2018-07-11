@@ -217,6 +217,11 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       where: {
         instanceId: flowNodeInstanceId,
       },
+      include: [{
+        model: this.processTokenModel,
+        as: 'processToken',
+        required: true,
+      }],
     });
 
     if (!matchingFlowNodeInstance) {
