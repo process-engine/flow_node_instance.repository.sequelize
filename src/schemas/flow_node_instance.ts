@@ -3,7 +3,7 @@ import {ProcessToken} from './process_token';
 
 export interface IFlowNodeInstanceAttributes {
   id: string;
-  instanceId: string;
+  flowNodeInstanceId: string;
   flowNodeId: string;
   isSuspended: boolean;
   // Contains the association to the ProcessToken model.
@@ -21,7 +21,7 @@ export function defineFlowNodeInstance(sequelize: Sequelize.Sequelize): Sequeliz
       primaryKey: true,
       defaultValue: Sequelize.UUIDV4,
     },
-    instanceId: {
+    flowNodeInstanceId: {
       type: Sequelize.STRING,
       allowNull: false,
     },

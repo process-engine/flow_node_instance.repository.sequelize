@@ -46,7 +46,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
 
     const createParams: any = {
       flowNodeId: flowNodeId,
-      instanceId: flowNodeInstanceId,
+      flowNodeInstanceId: flowNodeInstanceId,
       isSuspended: false,
       processToken: persistableProcessToken,
     };
@@ -71,7 +71,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     const matchingFlowNodeInstance: FlowNodeInstanceModel = await this.flowNodeInstanceModel.findOne({
       where: {
         flowNodeId: flowNodeId,
-        instanceId: flowNodeInstanceId,
+        flowNodeInstanceId: flowNodeInstanceId,
       },
       include: [{
         model: this.processTokenModel,
@@ -184,7 +184,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
 
     const matchingFlowNodeInstance: FlowNodeInstanceModel = await this.flowNodeInstanceModel.findOne({
       where: {
-        instanceId: flowNodeInstanceId,
+        flowNodeInstanceId: flowNodeInstanceId,
       },
       include: [{
         model: this.processTokenModel,
@@ -215,7 +215,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
 
     const matchingFlowNodeInstance: FlowNodeInstanceModel = await this.flowNodeInstanceModel.findOne({
       where: {
-        instanceId: flowNodeInstanceId,
+        flowNodeInstanceId: flowNodeInstanceId,
       },
       include: [{
         model: this.processTokenModel,
@@ -239,7 +239,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
   private _convertFlowNodeInstanceToRuntimeObject(dataModel: FlowNodeInstanceModel): Runtime.Types.FlowNodeInstance {
 
     const runtimeFlowNodeInstance: Runtime.Types.FlowNodeInstance = new Runtime.Types.FlowNodeInstance();
-    runtimeFlowNodeInstance.id = dataModel.instanceId;
+    runtimeFlowNodeInstance.id = dataModel.flowNodeInstanceId;
     runtimeFlowNodeInstance.flowNodeId = dataModel.flowNodeId;
     runtimeFlowNodeInstance.isSuspended = dataModel.isSuspended;
 
