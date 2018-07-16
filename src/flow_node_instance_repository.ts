@@ -13,7 +13,7 @@ import {
 
 export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
 
-  public config: any;
+  public config: Sequelize.Options;
 
   private _flowNodeInstanceModel: Sequelize.Model<FlowNodeInstanceModel, IFlowNodeInstanceAttributes>;
   private _processTokenModel: Sequelize.Model<ProcessToken, IProcessTokenAttributes>;
@@ -29,7 +29,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
   }
 
   public async initialize(): Promise<void> {
-    this.sequelize = await getConnection(this.config.database, this.config.username, this.config.password, this.config);
+    this.sequelize = await getConnection(this.config);
     await loadModels(this.sequelize);
 
     this._flowNodeInstanceModel = this.sequelize.models.FlowNodeInstance;
