@@ -33,7 +33,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     await loadModels(this.sequelize);
 
     this._flowNodeInstanceModel = this.sequelize.models.FlowNodeInstance;
-    this._processTokenModel = this.sequelize.models.ProcessTokenNew; // TODO: Rename as soon as the model is renamed
+    this._processTokenModel = this.sequelize.models.ProcessToken;
   }
 
   public async persistOnEnter(processToken: Runtime.Types.ProcessToken,
