@@ -55,5 +55,5 @@ export function defineProcessToken(sequelize: Sequelize.Sequelize): Sequelize.Mo
   };
 
   // TODO: Rename to `ProcessToken`, once the old datamodel with the same name is removed.
-  return sequelize.define<ProcessToken, IProcessTokenAttributes>('ProcessTokenNew', attributes);
+  return sequelize.define<ProcessToken, IProcessTokenAttributes>('ProcessToken', attributes);
 }
