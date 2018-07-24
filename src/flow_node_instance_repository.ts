@@ -47,6 +47,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     const createParams: any = {
       flowNodeId: flowNodeId,
       flowNodeInstanceId: flowNodeInstanceId,
+      state: Runtime.Types.FlowNodeInstanceState.running,
       isSuspended: false,
       processToken: persistableProcessToken,
     };
@@ -83,6 +84,8 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     if (!matchingFlowNodeInstance) {
       throw new Error(`flow node with instance id '${flowNodeInstanceId}' not found!`);
     }
+
+    matchingFlowNodeInstance.state = Runtime.Types.FlowNodeInstanceState.finished;
 
     const currentToken: ProcessToken = matchingFlowNodeInstance.processToken;
     const updatedToken: ProcessToken = Object.assign(currentToken, newProcessToken);
@@ -241,6 +244,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     const runtimeFlowNodeInstance: Runtime.Types.FlowNodeInstance = new Runtime.Types.FlowNodeInstance();
     runtimeFlowNodeInstance.id = dataModel.flowNodeInstanceId;
     runtimeFlowNodeInstance.flowNodeId = dataModel.flowNodeId;
+    runtimeFlowNodeInstance.state = dataModel.state;
     runtimeFlowNodeInstance.isSuspended = dataModel.isSuspended;
 
     const processToken: Runtime.Types.ProcessToken = this._convertProcessTokenToRuntimeObject(dataModel.processToken);
