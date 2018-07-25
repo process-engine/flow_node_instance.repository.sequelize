@@ -280,10 +280,10 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     processToken.processInstanceId = dataModel.processInstanceId;
     processToken.processModelId = dataModel.processModelId;
     processToken.correlationId = dataModel.correlationId;
-    processToken.identity = JSON.parse(dataModel.identity);
+    processToken.identity = dataModel.identity ? JSON.parse(dataModel.identity) : undefined;
     processToken.createdAt = dataModel.createdAt;
     processToken.caller = dataModel.caller;
-    processToken.payload = JSON.parse(dataModel.payload);
+    processToken.payload = dataModel.payload ? JSON.parse(dataModel.payload) : {};
 
     return processToken;
   }
