@@ -33,7 +33,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     await loadModels(this.sequelize);
 
     this._flowNodeInstanceModel = this.sequelize.models.FlowNodeInstance;
-    this._processTokenModel = this.sequelize.models.ProcessTokenNew; // TODO: Rename as soon as the model is renamed
+    this._processTokenModel = this.sequelize.models.ProcessToken;
   }
 
   public async persistOnEnter(processToken: Runtime.Types.ProcessToken,
@@ -47,6 +47,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     const createParams: any = {
       flowNodeId: flowNodeId,
       flowNodeInstanceId: flowNodeInstanceId,
+      state: Runtime.Types.FlowNodeInstanceState.running,
       isSuspended: false,
       processToken: persistableProcessToken,
     };
@@ -84,6 +85,8 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       throw new Error(`flow node with instance id '${flowNodeInstanceId}' not found!`);
     }
 
+    matchingFlowNodeInstance.state = Runtime.Types.FlowNodeInstanceState.finished;
+
     const currentToken: ProcessToken = matchingFlowNodeInstance.processToken;
     const updatedToken: ProcessToken = Object.assign(currentToken, newProcessToken);
     updatedToken.identity = JSON.stringify(newProcessToken.identity);
@@ -94,6 +97,26 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     const runtimeFlowNodeInstance: Runtime.Types.FlowNodeInstance = this._convertFlowNodeInstanceToRuntimeObject(matchingFlowNodeInstance);
 
     return runtimeFlowNodeInstance;
+  }
+
+  public async queryByState(state: Runtime.Types.FlowNodeInstanceState): Promise<Array<Runtime.Types.FlowNodeInstance>> {
+
+    const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
+      where: {
+        state: state,
+      },
+      include: [{
+        model: this.processTokenModel,
+        as: 'processToken',
+        required: true,
+      }],
+    });
+
+    // TODO - BUG: For some reason the "this" context gets lost here, unless a bind is made.
+    // This effect has thus far been observed only in those operations that involve the consumer api.
+    const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
+
+    return flowNodeInstances;
   }
 
   public async queryByCorrelation(correlationId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
@@ -241,6 +264,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     const runtimeFlowNodeInstance: Runtime.Types.FlowNodeInstance = new Runtime.Types.FlowNodeInstance();
     runtimeFlowNodeInstance.id = dataModel.flowNodeInstanceId;
     runtimeFlowNodeInstance.flowNodeId = dataModel.flowNodeId;
+    runtimeFlowNodeInstance.state = dataModel.state;
     runtimeFlowNodeInstance.isSuspended = dataModel.isSuspended;
 
     const processToken: Runtime.Types.ProcessToken = this._convertProcessTokenToRuntimeObject(dataModel.processToken);
@@ -256,10 +280,10 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     processToken.processInstanceId = dataModel.processInstanceId;
     processToken.processModelId = dataModel.processModelId;
     processToken.correlationId = dataModel.correlationId;
-    processToken.identity = JSON.parse(dataModel.identity);
+    processToken.identity = dataModel.identity ? JSON.parse(dataModel.identity) : undefined;
     processToken.createdAt = dataModel.createdAt;
     processToken.caller = dataModel.caller;
-    processToken.payload = JSON.parse(dataModel.payload);
+    processToken.payload = dataModel.payload ? JSON.parse(dataModel.payload) : {};
 
     return processToken;
   }

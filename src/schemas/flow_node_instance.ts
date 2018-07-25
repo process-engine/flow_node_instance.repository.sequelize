@@ -1,11 +1,14 @@
 import * as Sequelize from 'sequelize';
 import {ProcessToken} from './process_token';
 
+import {Runtime} from '@process-engine/process_engine_contracts';
+
 export interface IFlowNodeInstanceAttributes {
   id: string;
   flowNodeInstanceId: string;
   flowNodeId: string;
   isSuspended: boolean;
+  state: Runtime.Types.FlowNodeInstanceState;
   // Contains the association to the ProcessToken model.
   // Must be optional, otherwise this property will be expected in the attribute payload of `sequelize.define`.
   processToken?: ProcessToken;
@@ -28,6 +31,11 @@ export function defineFlowNodeInstance(sequelize: Sequelize.Sequelize): Sequeliz
     flowNodeId: {
       type: Sequelize.STRING,
       allowNull: false,
+    },
+    state: {
+      type: Sequelize.INTEGER,
+      allowNull: false,
+      defaultValue: 0,
     },
     isSuspended: {
       type: Sequelize.BOOLEAN,
