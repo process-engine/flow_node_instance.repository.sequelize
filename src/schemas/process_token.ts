@@ -1,3 +1,4 @@
+import * as moment from 'moment';
 import * as Sequelize from 'sequelize';
 
 export interface IProcessTokenAttributes {
@@ -41,7 +42,7 @@ export function defineProcessToken(sequelize: Sequelize.Sequelize): Sequelize.Mo
     createdAt: {
       type: Sequelize.DATE,
       allowNull: true,
-      defaultValue: sequelize.fn('NOW'),
+      defaultValue: moment.utc().toDate(),
     },
     caller: {
       type: Sequelize.STRING,
