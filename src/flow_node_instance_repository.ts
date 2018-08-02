@@ -99,6 +99,42 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     return runtimeFlowNodeInstance;
   }
 
+  public async persistOnError(newProcessToken: Runtime.Types.ProcessToken,
+                             flowNodeId: string,
+                             flowNodeInstanceId: string,
+                             error: Error): Promise<Runtime.Types.FlowNodeInstance> {
+
+    const matchingFlowNodeInstance: FlowNodeInstanceModel = await this.flowNodeInstanceModel.findOne({
+      where: {
+        flowNodeId: flowNodeId,
+        flowNodeInstanceId: flowNodeInstanceId,
+      },
+      include: [{
+        model: this.processTokenModel,
+        as: 'processToken',
+        required: true,
+      }],
+    });
+
+    if (!matchingFlowNodeInstance) {
+      throw new Error(`flow node with instance id '${flowNodeInstanceId}' not found!`);
+    }
+
+    matchingFlowNodeInstance.state = Runtime.Types.FlowNodeInstanceState.error;
+    matchingFlowNodeInstance.error = error.toString();
+
+    const currentToken: ProcessToken = matchingFlowNodeInstance.processToken;
+    const updatedToken: ProcessToken = Object.assign(currentToken, newProcessToken);
+    updatedToken.identity = JSON.stringify(newProcessToken.identity);
+    updatedToken.payload = JSON.stringify(newProcessToken.payload);
+
+    matchingFlowNodeInstance.processToken = updatedToken;
+    matchingFlowNodeInstance.save();
+    const runtimeFlowNodeInstance: Runtime.Types.FlowNodeInstance = this._convertFlowNodeInstanceToRuntimeObject(matchingFlowNodeInstance);
+
+    return runtimeFlowNodeInstance;
+  }
+
   public async queryByState(state: Runtime.Types.FlowNodeInstanceState): Promise<Array<Runtime.Types.FlowNodeInstance>> {
 
     const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
@@ -265,6 +301,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     runtimeFlowNodeInstance.id = dataModel.flowNodeInstanceId;
     runtimeFlowNodeInstance.flowNodeId = dataModel.flowNodeId;
     runtimeFlowNodeInstance.state = dataModel.state;
+    runtimeFlowNodeInstance.error = dataModel.error;
     runtimeFlowNodeInstance.isSuspended = dataModel.isSuspended;
 
     const processToken: Runtime.Types.ProcessToken = this._convertProcessTokenToRuntimeObject(dataModel.processToken);
