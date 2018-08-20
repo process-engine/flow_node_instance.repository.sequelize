@@ -16,9 +16,9 @@
     "@essential-projects/iam_contracts": "^3.1.0",
     "@essential-projects/sequelize_connection_manager": "^1.0.3",
     "@process-engine/process_engine_contracts": "^21.0.0",
+    "@types/clone": "^0.1.30",
+    "clone": "^2.1.1",
     "loggerhythm": "^3.0.3",
-    "pg": "^7.4.3",
-    "pg-hstore": "^2.3.2",
     "sequelize": "^4.38.0"
   },
   "devDependencies": {
