@@ -14,8 +14,8 @@ export async function loadModels(sequelizeInstance: Sequelize.Sequelize): Promis
   const flowNodeInstance: Sequelize.Model<FlowNodeInstance, IFlowNodeInstanceAttributes> = defineFlowNodeInstance(sequelizeInstance);
   const processToken: Sequelize.Model<ProcessToken, IProcessTokenAttributes> = defineProcessToken(sequelizeInstance);
 
-  flowNodeInstance.hasOne(processToken, {
-    as: 'processToken',
+  flowNodeInstance.hasMany(processToken, {
+    as: 'processTokens',
     foreignKey: 'flowNodeInstanceId',
   });
 

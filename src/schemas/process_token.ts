@@ -9,6 +9,7 @@ export interface IProcessTokenAttributes {
   identity: string;
   createdAt: Date;
   caller?: string; // Only set, if the process token belongs to a subprocess
+  type: string;
   payload: string;
 }
 
@@ -45,6 +46,10 @@ export function defineProcessToken(sequelize: Sequelize.Sequelize): Sequelize.Mo
       defaultValue: moment.utc().toDate(),
     },
     caller: {
+      type: Sequelize.STRING,
+      allowNull: true,
+    },
+    type: {
       type: Sequelize.STRING,
       allowNull: true,
     },

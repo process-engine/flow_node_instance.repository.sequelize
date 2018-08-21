@@ -12,7 +12,7 @@ export interface IFlowNodeInstanceAttributes {
   error?: string;
   // Contains the association to the ProcessToken model.
   // Must be optional, otherwise this property will be expected in the attribute payload of `sequelize.define`.
-  processToken?: ProcessToken;
+  processTokens?: Array<ProcessToken>;
 }
 
 export type FlowNodeInstance = Sequelize.Instance<IFlowNodeInstanceAttributes> & IFlowNodeInstanceAttributes;
@@ -34,7 +34,7 @@ export function defineFlowNodeInstance(sequelize: Sequelize.Sequelize): Sequeliz
       allowNull: false,
     },
     state: {
-      type: Sequelize.INTEGER,
+      type: Sequelize.STRING,
       allowNull: false,
       defaultValue: 0,
     },
