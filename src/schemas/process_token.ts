@@ -6,6 +6,7 @@ export interface IProcessTokenAttributes {
   processInstanceId: string;
   processModelId: string;
   correlationId: string;
+  flowNodeInstanceId: string;
   identity: string;
   createdAt: Date;
   caller?: string; // Only set, if the process token belongs to a subprocess
@@ -27,6 +28,10 @@ export function defineProcessToken(sequelize: Sequelize.Sequelize): Sequelize.Mo
     },
     processModelId: {
       type: Sequelize.STRING,
+      allowNull: false,
+    },
+    flowNodeInstanceId: {
+      type: Sequelize.UUID,
       allowNull: false,
     },
     correlationId: {
