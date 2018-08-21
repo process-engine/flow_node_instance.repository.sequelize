@@ -81,14 +81,14 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     return this._persistOnStateChange(newProcessToken, flowNodeId, flowNodeInstanceId, Runtime.Types.FlowNodeInstanceState.error, error);
   }
 
-  public async persistOnTerminate(newProcessToken: Runtime.Types.ProcessToken,
+  public async persistOnTerminate(token: Runtime.Types.ProcessToken,
                              flowNodeId: string,
                              flowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
 
-    return this._persistOnStateChange(newProcessToken, flowNodeId, flowNodeInstanceId, Runtime.Types.FlowNodeInstanceState.terminated);
+    return this._persistOnStateChange(token, flowNodeId, flowNodeInstanceId, Runtime.Types.FlowNodeInstanceState.terminated);
   }
 
-  private async _persistOnStateChange(newProcessToken: Runtime.Types.ProcessToken,
+  private async _persistOnStateChange(token: Runtime.Types.ProcessToken,
                                       flowNodeId: string,
                                       flowNodeInstanceId: string,
                                       newState: Runtime.Types.FlowNodeInstanceState,
@@ -117,9 +117,9 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     }
 
     const currentToken: ProcessToken = matchingFlowNodeInstance.processToken;
-    const updatedToken: ProcessToken = Object.assign(currentToken, newProcessToken);
-    updatedToken.identity = JSON.stringify(newProcessToken.identity);
-    updatedToken.payload = JSON.stringify(newProcessToken.payload);
+    const updatedToken: ProcessToken = Object.assign(currentToken, token);
+    updatedToken.identity = JSON.stringify(token.identity);
+    updatedToken.payload = JSON.stringify(token.payload);
 
     matchingFlowNodeInstance.processToken = updatedToken;
     matchingFlowNodeInstance.save();
