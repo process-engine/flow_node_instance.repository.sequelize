@@ -16,7 +16,7 @@ export async function loadModels(sequelizeInstance: Sequelize.Sequelize): Promis
 
   flowNodeInstance.hasMany(processToken, {
     as: 'processTokens',
-    foreignKey: 'flowNodeInstanceId',
+    foreignKey: 'flowNodeInstancePrimaryKey',
   });
 
   await sequelizeInstance.sync();

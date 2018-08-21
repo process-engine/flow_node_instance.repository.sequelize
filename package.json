@@ -13,6 +13,7 @@
     "Christian Werner <christian.werner@5minds.de>"
   ],
   "dependencies": {
+    "@essential-projects/errors_ts": "^1.3.0",
     "@essential-projects/iam_contracts": "^3.1.0",
     "@essential-projects/sequelize_connection_manager": "^1.0.3",
     "@process-engine/process_engine_contracts": "feature~store_enter_and_exit_token_separately",

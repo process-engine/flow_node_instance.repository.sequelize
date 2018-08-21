@@ -1,3 +1,4 @@
+import {NotFoundError} from '@essential-projects/errors_ts';
 import {getConnection} from '@essential-projects/sequelize_connection_manager';
 import {IFlowNodeInstanceRepository, Runtime} from '@process-engine/process_engine_contracts';
 
@@ -46,9 +47,12 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       include: [{
         model: this.processTokenModel,
         as: 'processTokens',
-        required: true,
       }],
     });
+
+    if (!matchingFlowNodeInstance) {
+      throw new NotFoundError(`FlowNodeInstance with flowNodeInstanceId "${flowNodeInstanceId}" does not exist.`);
+    }
 
     const runtimeFlowNodeInstance: Runtime.Types.FlowNodeInstance = this._convertFlowNodeInstanceToRuntimeObject(matchingFlowNodeInstance);
 
@@ -162,29 +166,16 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
                               flowNodeInstanceId: string,
                               processToken: Runtime.Types.ProcessToken): Promise<Runtime.Types.FlowNodeInstance> {
 
-    const persistableProcessToken: any = clone(processToken);
-    persistableProcessToken.identity = JSON.stringify(persistableProcessToken.identity);
-    persistableProcessToken.payload = JSON.stringify(persistableProcessToken.payload);
-    persistableProcessToken.type = Runtime.Types.ProcessTokenType.onEnter;
-
     const createParams: any = {
       flowNodeId: flowNodeId,
       flowNodeInstanceId: flowNodeInstanceId,
       state: Runtime.Types.FlowNodeInstanceState.running,
-      processToken: persistableProcessToken,
     };
 
-    const result: FlowNodeInstanceModel = await this.flowNodeInstanceModel.create(
-      createParams, {
-      include: [{
-        model: this.processTokenModel,
-        as: 'processToken',
-      }],
-    });
+    await this.flowNodeInstanceModel.create(createParams);
+    await this._createProcessTokenForFlowNodeInstance(flowNodeInstanceId, processToken, Runtime.Types.ProcessTokenType.onEnter);
 
-    const flowNodeInstance: Runtime.Types.FlowNodeInstance = this._convertFlowNodeInstanceToRuntimeObject(result);
-
-    return flowNodeInstance;
+    return this.queryByInstanceId(flowNodeInstanceId);
   }
 
   public async persistOnExit(flowNodeId: string,
