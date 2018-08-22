@@ -28,6 +28,7 @@ export function defineFlowNodeInstance(sequelize: Sequelize.Sequelize): Sequeliz
     flowNodeInstanceId: {
       type: Sequelize.STRING,
       allowNull: false,
+      unique: true,
     },
     flowNodeId: {
       type: Sequelize.STRING,
