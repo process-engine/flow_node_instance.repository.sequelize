@@ -11,6 +11,7 @@ export interface IProcessTokenAttributes {
   caller?: string; // Only set, if the process token belongs to a subprocess
   type: string;
   payload: string;
+  flowNodeInstanceId: string;
 }
 
 export type ProcessToken = Sequelize.Instance<IProcessTokenAttributes> & IProcessTokenAttributes;
@@ -57,6 +58,10 @@ export function defineProcessToken(sequelize: Sequelize.Sequelize): Sequelize.Mo
       // NOTE: Use Sequelize.TEXT, since payloads can contain all kinds of things and could therefore exceed 255 chars.
       type: Sequelize.TEXT,
       allowNull: true,
+    },
+    flowNodeInstanceId: {
+      type: Sequelize.STRING,
+      allowNull: false,
     },
   };
 
