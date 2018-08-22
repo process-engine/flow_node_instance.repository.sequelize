@@ -38,6 +38,27 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     this._processTokenModel = this.sequelize.models.ProcessToken;
   }
 
+  public async queryByFlowNodeId(flowNodeId: string): Promise<Runtime.Types.FlowNodeInstance> {
+
+    const matchingFlowNodeInstance: FlowNodeInstanceModel = await this.flowNodeInstanceModel.findOne({
+      where: {
+        flowNodeId: flowNodeId,
+      },
+      include: [{
+        model: this.processTokenModel,
+        as: 'processTokens',
+      }],
+    });
+
+    if (!matchingFlowNodeInstance) {
+      throw new NotFoundError(`FlowNodeInstance with flowNodeId "${flowNodeId}" does not exist.`);
+    }
+
+    const runtimeFlowNodeInstance: Runtime.Types.FlowNodeInstance = this._convertFlowNodeInstanceToRuntimeObject(matchingFlowNodeInstance);
+
+    return runtimeFlowNodeInstance;
+  }
+
   public async queryByInstanceId(flowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
 
     const matchingFlowNodeInstance: FlowNodeInstanceModel = await this.flowNodeInstanceModel.findOne({
