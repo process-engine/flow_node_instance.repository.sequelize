@@ -1,6 +1,7 @@
 import {getConnection} from '@essential-projects/sequelize_connection_manager';
 import {IFlowNodeInstanceRepository, Runtime} from '@process-engine/process_engine_contracts';
 
+import * as clone from 'clone';
 import * as Sequelize from 'sequelize';
 
 import {loadModels} from './model_loader';
@@ -62,7 +63,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
                               flowNodeId: string,
                               flowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
 
-    const persistableProcessToken: any = Object.assign({}, processToken);
+    const persistableProcessToken: any = clone(processToken);
     persistableProcessToken.identity = JSON.stringify(persistableProcessToken.identity);
     persistableProcessToken.payload = JSON.stringify(persistableProcessToken.payload);
     persistableProcessToken.flowNodeInstanceId = flowNodeInstanceId;
@@ -92,35 +93,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
                              flowNodeId: string,
                              flowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
 
-    const matchingFlowNodeInstance: FlowNodeInstanceModel = await this.flowNodeInstanceModel.findOne({
-      where: {
-        flowNodeId: flowNodeId,
-        flowNodeInstanceId: flowNodeInstanceId,
-      },
-      include: [{
-        model: this.processTokenModel,
-        as: 'processToken',
-        required: true,
-      }],
-    });
-
-    if (!matchingFlowNodeInstance) {
-      throw new Error(`flow node with instance id '${flowNodeInstanceId}' not found!`);
-    }
-
-    matchingFlowNodeInstance.state = Runtime.Types.FlowNodeInstanceState.finished;
-
-    const currentToken: ProcessToken = matchingFlowNodeInstance.processToken;
-    const updatedToken: ProcessToken = Object.assign(currentToken, newProcessToken);
-    updatedToken.identity = JSON.stringify(newProcessToken.identity);
-    updatedToken.payload = JSON.stringify(newProcessToken.payload);
-
-    matchingFlowNodeInstance.processToken = updatedToken;
-    matchingFlowNodeInstance.save();
-    matchingFlowNodeInstance.processToken.save();
-    const runtimeFlowNodeInstance: Runtime.Types.FlowNodeInstance = this._convertFlowNodeInstanceToRuntimeObject(matchingFlowNodeInstance);
-
-    return runtimeFlowNodeInstance;
+    return this._persistOnStateChange(newProcessToken, flowNodeId, flowNodeInstanceId, Runtime.Types.FlowNodeInstanceState.finished);
   }
 
   public async persistOnError(newProcessToken: Runtime.Types.ProcessToken,
@@ -128,6 +101,22 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
                               flowNodeInstanceId: string,
                               error: Error): Promise<Runtime.Types.FlowNodeInstance> {
 
+    return this._persistOnStateChange(newProcessToken, flowNodeId, flowNodeInstanceId, Runtime.Types.FlowNodeInstanceState.error, error);
+  }
+
+  public async persistOnTerminate(token: Runtime.Types.ProcessToken,
+                             flowNodeId: string,
+                             flowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
+
+    return this._persistOnStateChange(token, flowNodeId, flowNodeInstanceId, Runtime.Types.FlowNodeInstanceState.terminated);
+  }
+
+  private async _persistOnStateChange(token: Runtime.Types.ProcessToken,
+                                      flowNodeId: string,
+                                      flowNodeInstanceId: string,
+                                      newState: Runtime.Types.FlowNodeInstanceState,
+                                      error?: Error): Promise<Runtime.Types.FlowNodeInstance> {
+
     const matchingFlowNodeInstance: FlowNodeInstanceModel = await this.flowNodeInstanceModel.findOne({
       where: {
         flowNodeId: flowNodeId,
@@ -144,13 +133,16 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       throw new Error(`flow node with instance id '${flowNodeInstanceId}' not found!`);
     }
 
-    matchingFlowNodeInstance.state = Runtime.Types.FlowNodeInstanceState.error;
-    matchingFlowNodeInstance.error = error.toString();
+    matchingFlowNodeInstance.state = newState;
+
+    if (error) {
+      matchingFlowNodeInstance.error = error.toString();
+    }
 
     const currentToken: ProcessToken = matchingFlowNodeInstance.processToken;
-    const updatedToken: ProcessToken = Object.assign(currentToken, newProcessToken);
-    updatedToken.identity = JSON.stringify(newProcessToken.identity);
-    updatedToken.payload = JSON.stringify(newProcessToken.payload);
+    const updatedToken: ProcessToken = Object.assign(currentToken, token);
+    updatedToken.identity = JSON.stringify(token.identity);
+    updatedToken.payload = JSON.stringify(token.payload);
 
     matchingFlowNodeInstance.processToken = updatedToken;
     matchingFlowNodeInstance.save();
