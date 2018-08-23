@@ -37,6 +37,28 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     this._processTokenModel = this.sequelize.models.ProcessToken;
   }
 
+  public async getFlowNodeInstanceById(flowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
+
+    const matchingFlowNodeInstance: FlowNodeInstanceModel = await this.flowNodeInstanceModel.findOne({
+      where: {
+        flowNodeInstanceId: flowNodeInstanceId,
+      },
+      include: [{
+        model: this.processTokenModel,
+        as: 'processToken',
+        required: true,
+      }],
+    });
+
+    if (matchingFlowNodeInstance === null) {
+      return null;
+    }
+
+    const flowNodeInstance: Runtime.Types.FlowNodeInstance = this._convertFlowNodeInstanceToRuntimeObject(matchingFlowNodeInstance);
+
+    return flowNodeInstance;
+  }
+
   public async persistOnEnter(processToken: Runtime.Types.ProcessToken,
                               flowNodeId: string,
                               flowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
@@ -44,6 +66,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     const persistableProcessToken: any = clone(processToken);
     persistableProcessToken.identity = JSON.stringify(persistableProcessToken.identity);
     persistableProcessToken.payload = JSON.stringify(persistableProcessToken.payload);
+    persistableProcessToken.flowNodeInstanceId = flowNodeInstanceId;
 
     const createParams: any = {
       flowNodeId: flowNodeId,
@@ -74,16 +97,16 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
   }
 
   public async persistOnError(newProcessToken: Runtime.Types.ProcessToken,
-                             flowNodeId: string,
-                             flowNodeInstanceId: string,
-                             error: Error): Promise<Runtime.Types.FlowNodeInstance> {
+                              flowNodeId: string,
+                              flowNodeInstanceId: string,
+                              error: Error): Promise<Runtime.Types.FlowNodeInstance> {
 
     return this._persistOnStateChange(newProcessToken, flowNodeId, flowNodeInstanceId, Runtime.Types.FlowNodeInstanceState.error, error);
   }
 
   public async persistOnTerminate(token: Runtime.Types.ProcessToken,
-                             flowNodeId: string,
-                             flowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
+                                  flowNodeId: string,
+                                  flowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
 
     return this._persistOnStateChange(token, flowNodeId, flowNodeInstanceId, Runtime.Types.FlowNodeInstanceState.terminated);
   }
@@ -123,9 +146,23 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
 
     matchingFlowNodeInstance.processToken = updatedToken;
     matchingFlowNodeInstance.save();
+    matchingFlowNodeInstance.processToken.save();
     const runtimeFlowNodeInstance: Runtime.Types.FlowNodeInstance = this._convertFlowNodeInstanceToRuntimeObject(matchingFlowNodeInstance);
 
     return runtimeFlowNodeInstance;
+  }
+
+  public async queryProcessTokensByProcessInstance(processInstanceId: string): Promise<Array<Runtime.Types.ProcessToken>> {
+
+    const processInstanceTokens: Array<ProcessToken> = await this.processTokenModel.findAll({
+      where: {
+        processInstanceId: processInstanceId,
+      },
+    });
+
+    const flowNodeInstances: Array<Runtime.Types.ProcessToken> = processInstanceTokens.map(this._convertProcessTokenToRuntimeObject.bind(this));
+
+    return flowNodeInstances;
   }
 
   public async queryByState(state: Runtime.Types.FlowNodeInstanceState): Promise<Array<Runtime.Types.FlowNodeInstance>> {
@@ -310,6 +347,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     processToken.processInstanceId = dataModel.processInstanceId;
     processToken.processModelId = dataModel.processModelId;
     processToken.correlationId = dataModel.correlationId;
+    processToken.flowNodeInstanceId = dataModel.flowNodeInstanceId;
     processToken.identity = dataModel.identity ? JSON.parse(dataModel.identity) : undefined;
     processToken.createdAt = dataModel.createdAt;
     processToken.caller = dataModel.caller;
