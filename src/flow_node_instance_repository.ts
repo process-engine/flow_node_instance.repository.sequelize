@@ -105,8 +105,8 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
   }
 
   public async persistOnTerminate(token: Runtime.Types.ProcessToken,
-                             flowNodeId: string,
-                             flowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
+                                  flowNodeId: string,
+                                  flowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
 
     return this._persistOnStateChange(token, flowNodeId, flowNodeInstanceId, Runtime.Types.FlowNodeInstanceState.terminated);
   }
@@ -146,6 +146,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
 
     matchingFlowNodeInstance.processToken = updatedToken;
     matchingFlowNodeInstance.save();
+    matchingFlowNodeInstance.processToken.save();
     const runtimeFlowNodeInstance: Runtime.Types.FlowNodeInstance = this._convertFlowNodeInstanceToRuntimeObject(matchingFlowNodeInstance);
 
     return runtimeFlowNodeInstance;
