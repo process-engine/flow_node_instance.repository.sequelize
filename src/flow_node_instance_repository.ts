@@ -80,6 +80,19 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     return runtimeFlowNodeInstance;
   }
 
+  public async queryProcessTokensByProcessInstance(processInstanceId: string): Promise<Array<Runtime.Types.ProcessToken>> {
+
+    const processInstanceTokens: Array<ProcessToken> = await this.processTokenModel.findAll({
+      where: {
+        processInstanceId: processInstanceId,
+      },
+    });
+
+    const flowNodeInstances: Array<Runtime.Types.ProcessToken> = processInstanceTokens.map(this._convertProcessTokenToRuntimeObject.bind(this));
+
+    return flowNodeInstances;
+  }
+
   public async queryByState(state: Runtime.Types.FlowNodeInstanceState): Promise<Array<Runtime.Types.FlowNodeInstance>> {
 
     const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
@@ -317,6 +330,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     processToken.processInstanceId = dataModel.processInstanceId;
     processToken.processModelId = dataModel.processModelId;
     processToken.correlationId = dataModel.correlationId;
+    processToken.flowNodeInstanceId = dataModel.flowNodeInstanceId;
     processToken.identity = dataModel.identity ? JSON.parse(dataModel.identity) : undefined;
     processToken.createdAt = dataModel.createdAt;
     processToken.caller = dataModel.caller;
