@@ -80,7 +80,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     return runtimeFlowNodeInstance;
   }
 
-  public async queryProcessTokensByProcessInstance(processInstanceId: string): Promise<Array<Runtime.Types.ProcessToken>> {
+  public async queryProcessTokensByProcessInstanceId(processInstanceId: string): Promise<Array<Runtime.Types.ProcessToken>> {
 
     const processInstanceTokens: Array<ProcessToken> = await this.processTokenModel.findAll({
       where: {
