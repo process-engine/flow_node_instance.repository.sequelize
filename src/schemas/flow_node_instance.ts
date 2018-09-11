@@ -7,7 +7,6 @@ export interface IFlowNodeInstanceAttributes {
   id: string;
   flowNodeInstanceId: string;
   flowNodeId: string;
-  isSuspended: boolean;
   state: Runtime.Types.FlowNodeInstanceState;
   error?: string;
   // Contains the association to the ProcessToken model.
@@ -42,11 +41,6 @@ export function defineFlowNodeInstance(sequelize: Sequelize.Sequelize): Sequeliz
     error: {
       type: Sequelize.STRING,
       allowNull: true,
-    },
-    isSuspended: {
-      type: Sequelize.BOOLEAN,
-      allowNull: false,
-      defaultValue: false,
     },
   };
 
