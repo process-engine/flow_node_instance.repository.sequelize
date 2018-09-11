@@ -38,9 +38,31 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     this._processTokenModel = this.sequelize.models.ProcessToken;
   }
 
-  public async queryByFlowNodeId(flowNodeId: string): Promise<Runtime.Types.FlowNodeInstance> {
+  public async querySpecificFlowNode(correlationId: string, processModelId: string, flowNodeId: string): Promise<Runtime.Types.FlowNodeInstance> {
 
-    const matchingFlowNodeInstance: FlowNodeInstanceModel = await this.flowNodeInstanceModel.findOne({
+    const result: FlowNodeInstanceModel = await this.flowNodeInstanceModel.findOne({
+      where: {
+        flowNodeId: flowNodeId,
+      },
+      include: [{
+        model: this.processTokenModel,
+        as: 'processTokens',
+        required: true,
+        where: {
+          correlationId: correlationId,
+          processModelId: processModelId,
+        },
+      }],
+    });
+
+    const flowNodeInstance: Runtime.Types.FlowNodeInstance = this._convertFlowNodeInstanceToRuntimeObject(result);
+
+    return flowNodeInstance;
+  }
+
+  public async queryByFlowNodeId(flowNodeId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
+
+    const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
       where: {
         flowNodeId: flowNodeId,
       },
@@ -50,13 +72,9 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       }],
     });
 
-    if (!matchingFlowNodeInstance) {
-      throw new NotFoundError(`FlowNodeInstance with flowNodeId "${flowNodeId}" does not exist.`);
-    }
+    const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
 
-    const runtimeFlowNodeInstance: Runtime.Types.FlowNodeInstance = this._convertFlowNodeInstanceToRuntimeObject(matchingFlowNodeInstance);
-
-    return runtimeFlowNodeInstance;
+    return flowNodeInstances;
   }
 
   public async queryByInstanceId(flowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
