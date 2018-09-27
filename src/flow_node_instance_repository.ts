@@ -151,31 +151,6 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     return flowNodeInstances;
   }
 
-  public async queryByCorrelationAndState(correlationId: string,
-                                          state: Runtime.Types.FlowNodeInstanceState,
-                                         ): Promise<Array<Runtime.Types.FlowNodeInstance>> {
-
-    const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
-      where: {
-        state: state,
-      },
-      include: [{
-        model: this.processTokenModel,
-        as: 'processTokens',
-        where: {
-          correlationId: correlationId,
-        },
-        required: true,
-      }],
-    });
-
-    // TODO - BUG: For some reason the "this" context gets lost here, unless a bind is made.
-    // This effect has thus far been observed only in those operations that involve the consumer api.
-    const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
-
-    return flowNodeInstances;
-  }
-
   public async queryByProcessModel(processModelId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
 
     const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
