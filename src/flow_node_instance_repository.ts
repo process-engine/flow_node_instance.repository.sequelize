@@ -332,6 +332,9 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     const runtimeFlowNodeInstance: Runtime.Types.FlowNodeInstance = new Runtime.Types.FlowNodeInstance();
     runtimeFlowNodeInstance.id = dataModel.flowNodeInstanceId;
     runtimeFlowNodeInstance.flowNodeId = dataModel.flowNodeId;
+    runtimeFlowNodeInstance.processInstanceId = dataModel.processTokens[0].processInstanceId;
+    runtimeFlowNodeInstance.processModelId = dataModel.processTokens[0].processModelId;
+    runtimeFlowNodeInstance.correlationId = dataModel.processTokens[0].correlationId;
     runtimeFlowNodeInstance.state = dataModel.state;
     runtimeFlowNodeInstance.error = dataModel.error;
 
