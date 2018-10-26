@@ -57,6 +57,10 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
 
     const flowNodeInstance: Runtime.Types.FlowNodeInstance = this._convertFlowNodeInstanceToRuntimeObject(result);
 
+    if (!flowNodeInstance) {
+      throw new NotFoundError(`FlowNodeInstance with flowNodeId "${flowNodeId}" does not exist.`);
+    }
+
     return flowNodeInstance;
   }
 
@@ -73,6 +77,10 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     });
 
     const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
+
+    if (!flowNodeInstances) {
+      throw new NotFoundError(`No flow node instances for flow node id "${flowNodeId}" found.`);
+    }
 
     return flowNodeInstances;
   }
