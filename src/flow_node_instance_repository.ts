@@ -57,6 +57,10 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
 
     const flowNodeInstance: Runtime.Types.FlowNodeInstance = this._convertFlowNodeInstanceToRuntimeObject(result);
 
+    if (!flowNodeInstance) {
+      throw new NotFoundError(`FlowNodeInstance with flowNodeId "${flowNodeId}" does not exist.`);
+    }
+
     return flowNodeInstance;
   }
 
