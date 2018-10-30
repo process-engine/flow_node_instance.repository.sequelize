@@ -55,8 +55,8 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       }],
     });
 
-    const resultingFNInstanceModelNotFound: boolean = result === null || result === undefined
-    if (resultingFNInstanceModelNotFound) {
+    const flowNodeInstanceNotFound: boolean = result === null || result === undefined
+    if (flowNodeInstanceNotFound) {
       throw new NotFoundError(`FlowNodeInstance with flowNodeId "${flowNodeId}" does not exist.`);
     }
 
