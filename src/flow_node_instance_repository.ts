@@ -1,6 +1,6 @@
 import {NotFoundError} from '@essential-projects/errors_ts';
 import {getConnection} from '@essential-projects/sequelize_connection_manager';
-import {IFlowNodeInstanceRepository, Runtime} from '@process-engine/process_engine_contracts';
+import {IFlowNodeInstanceRepository, Model, Runtime} from '@process-engine/process_engine_contracts';
 
 import * as clone from 'clone';
 import * as Sequelize from 'sequelize';
@@ -55,12 +55,13 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       }],
     });
 
-    const flowNodeInstanceNotFound: boolean = result === null || result === undefined
+    const flowNodeInstanceNotFound: boolean = result === null || result === undefined;
     if (flowNodeInstanceNotFound) {
       throw new NotFoundError(`FlowNodeInstance with flowNodeId "${flowNodeId}" does not exist.`);
     }
 
     const flowNodeInstance: Runtime.Types.FlowNodeInstance = this._convertFlowNodeInstanceToRuntimeObject(result);
+
     return flowNodeInstance;
   }
 
@@ -218,12 +219,13 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     return flowNodeInstances;
   }
 
-  public async persistOnEnter(flowNodeId: string,
+  public async persistOnEnter(flowNode: Model.Base.FlowNode,
                               flowNodeInstanceId: string,
                               processToken: Runtime.Types.ProcessToken): Promise<Runtime.Types.FlowNodeInstance> {
 
     const createParams: any = {
-      flowNodeId: flowNodeId,
+      flowNodeId: flowNode.id,
+      flowNodeType: flowNode.bpmnType,
       flowNodeInstanceId: flowNodeInstanceId,
       state: Runtime.Types.FlowNodeInstanceState.running,
     };
@@ -234,17 +236,17 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     return this.queryByInstanceId(flowNodeInstanceId);
   }
 
-  public async persistOnExit(flowNodeId: string,
+  public async persistOnExit(flowNode: Model.Base.FlowNode,
                              flowNodeInstanceId: string,
                              processToken: Runtime.Types.ProcessToken): Promise<Runtime.Types.FlowNodeInstance> {
 
     const flowNodeInstanceState: Runtime.Types.FlowNodeInstanceState = Runtime.Types.FlowNodeInstanceState.finished;
     const processTokenType: Runtime.Types.ProcessTokenType = Runtime.Types.ProcessTokenType.onExit;
 
-    return this._persistOnStateChange(flowNodeId, flowNodeInstanceId, processToken, flowNodeInstanceState, processTokenType);
+    return this._persistOnStateChange(flowNode.id, flowNodeInstanceId, processToken, flowNodeInstanceState, processTokenType);
   }
 
-  public async persistOnError(flowNodeId: string,
+  public async persistOnError(flowNode: Model.Base.FlowNode,
                               flowNodeInstanceId: string,
                               processToken: Runtime.Types.ProcessToken,
                               error: Error): Promise<Runtime.Types.FlowNodeInstance> {
@@ -252,17 +254,17 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     const flowNodeInstanceState: Runtime.Types.FlowNodeInstanceState = Runtime.Types.FlowNodeInstanceState.error;
     const processTokenType: Runtime.Types.ProcessTokenType = Runtime.Types.ProcessTokenType.onExit;
 
-    return this._persistOnStateChange(flowNodeId, flowNodeInstanceId, processToken, flowNodeInstanceState, processTokenType, error);
+    return this._persistOnStateChange(flowNode.id, flowNodeInstanceId, processToken, flowNodeInstanceState, processTokenType, error);
   }
 
-  public async persistOnTerminate(flowNodeId: string,
+  public async persistOnTerminate(flowNode: Model.Base.FlowNode,
                                   flowNodeInstanceId: string,
                                   processToken: Runtime.Types.ProcessToken): Promise<Runtime.Types.FlowNodeInstance> {
 
     const flowNodeInstanceState: Runtime.Types.FlowNodeInstanceState = Runtime.Types.FlowNodeInstanceState.terminated;
     const processTokenType: Runtime.Types.ProcessTokenType = Runtime.Types.ProcessTokenType.onExit;
 
-    return this._persistOnStateChange(flowNodeId, flowNodeInstanceId, processToken, flowNodeInstanceState, processTokenType);
+    return this._persistOnStateChange(flowNode.id, flowNodeInstanceId, processToken, flowNodeInstanceState, processTokenType);
   }
 
   public async suspend(flowNodeId: string,
