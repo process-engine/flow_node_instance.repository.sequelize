@@ -7,6 +7,7 @@ export interface IFlowNodeInstanceAttributes {
   id: string;
   flowNodeInstanceId: string;
   flowNodeId: string;
+  flowNodeType: string;
   state: Runtime.Types.FlowNodeInstanceState;
   error?: string;
   // Contains the association to the ProcessToken model.
@@ -30,6 +31,10 @@ export function defineFlowNodeInstance(sequelize: Sequelize.Sequelize): Sequeliz
       unique: true,
     },
     flowNodeId: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
+    flowNodeType: {
       type: Sequelize.STRING,
       allowNull: false,
     },
