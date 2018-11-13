@@ -226,6 +226,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     const createParams: any = {
       flowNodeId: flowNode.id,
       flowNodeType: flowNode.bpmnType,
+      eventType: (flowNode as any).eventType,
       flowNodeInstanceId: flowNodeInstanceId,
       state: Runtime.Types.FlowNodeInstanceState.running,
     };
@@ -338,6 +339,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     const runtimeFlowNodeInstance: Runtime.Types.FlowNodeInstance = new Runtime.Types.FlowNodeInstance();
     runtimeFlowNodeInstance.id = dataModel.flowNodeInstanceId;
     runtimeFlowNodeInstance.flowNodeType = dataModel.flowNodeType;
+    runtimeFlowNodeInstance.eventType = dataModel.eventType;
     runtimeFlowNodeInstance.flowNodeId = dataModel.flowNodeId;
     runtimeFlowNodeInstance.processInstanceId = dataModel.processTokens[0].processInstanceId;
     runtimeFlowNodeInstance.processModelId = dataModel.processTokens[0].processModelId;
