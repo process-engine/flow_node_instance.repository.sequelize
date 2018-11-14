@@ -368,6 +368,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     runtimeFlowNodeInstance.correlationId = dataModel.processTokens[0].correlationId;
     runtimeFlowNodeInstance.state = dataModel.state;
     runtimeFlowNodeInstance.error = dataModel.error;
+    runtimeFlowNodeInstance.previousFlowNodeInstanceId = dataModel.previousFlowNodeInstanceId;
 
     const processTokens: Array<Runtime.Types.ProcessToken> = dataModel.processTokens.map(this._convertProcessTokenToRuntimeObject);
 
