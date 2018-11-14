@@ -243,7 +243,8 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
 
   public async persistOnEnter(flowNode: Model.Base.FlowNode,
                               flowNodeInstanceId: string,
-                              processToken: Runtime.Types.ProcessToken): Promise<Runtime.Types.FlowNodeInstance> {
+                              processToken: Runtime.Types.ProcessToken,
+                              previousFlowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
 
     const createParams: any = {
       flowNodeId: flowNode.id,
@@ -251,6 +252,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       eventType: (flowNode as any).eventType,
       flowNodeInstanceId: flowNodeInstanceId,
       state: Runtime.Types.FlowNodeInstanceState.running,
+      previousFlowNodeInstanceId: previousFlowNodeInstanceId,
     };
 
     await this.flowNodeInstanceModel.create(createParams);
