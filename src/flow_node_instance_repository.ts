@@ -175,6 +175,28 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     return flowNodeInstances;
   }
 
+  public async deleteByProcessModelId(processModelId: string): Promise<void> {
+    const flowNodeInstancesToRemove: Array<Runtime.Types.FlowNodeInstance> = await this.queryByProcessModel(processModelId);
+    const flowNodeInstanceIdsToRemove: Array<string> = flowNodeInstancesToRemove.map(((flowNodeInstance: Runtime.Types.FlowNodeInstance): string => {
+      return flowNodeInstance.id;
+    }));
+
+    const flowNodeQueryParams: Sequelize.DestroyOptions = {
+      where: {
+        flowNodeInstanceId: flowNodeInstanceIdsToRemove,
+      },
+    };
+
+    const processTokenQueryParams: Sequelize.DestroyOptions = {
+      where: {
+        processModelId: processModelId,
+      },
+    };
+
+    await this.flowNodeInstanceModel.destroy(flowNodeQueryParams);
+    await this.processTokenModel.destroy(processTokenQueryParams);
+  }
+
   public async querySuspendedByCorrelation(correlationId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
 
     const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
