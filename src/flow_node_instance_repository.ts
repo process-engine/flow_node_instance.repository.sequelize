@@ -193,8 +193,8 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       },
     };
 
-    await this.flowNodeInstanceModel.destroy(flowNodeQueryParams);
     await this.processTokenModel.destroy(processTokenQueryParams);
+    await this.flowNodeInstanceModel.destroy(flowNodeQueryParams);
   }
 
   public async querySuspendedByCorrelation(correlationId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
