@@ -14,7 +14,7 @@ export interface IFlowNodeInstanceAttributes {
   // Contains the association to the ProcessToken model.
   // Must be optional, otherwise this property will be expected in the attribute payload of `sequelize.define`.
   processTokens?: Array<ProcessToken>;
-  // The ID of the FNI that was executed before.
+  // The ID of the FlowNodeInstance that was executed before.
   // Will only be undefined for StartEvents.
   previousFlowNodeInstanceId?: string;
 }
