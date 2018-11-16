@@ -1,6 +1,6 @@
 import {NotFoundError} from '@essential-projects/errors_ts';
 import {getConnection} from '@essential-projects/sequelize_connection_manager';
-import {IFlowNodeInstanceRepository, Model, Runtime} from '@process-engine/process_engine_contracts';
+import {EventType, IFlowNodeInstanceRepository, Model, Runtime} from '@process-engine/process_engine_contracts';
 
 import * as clone from 'clone';
 import * as Sequelize from 'sequelize';
@@ -243,7 +243,8 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
 
   public async persistOnEnter(flowNode: Model.Base.FlowNode,
                               flowNodeInstanceId: string,
-                              processToken: Runtime.Types.ProcessToken): Promise<Runtime.Types.FlowNodeInstance> {
+                              processToken: Runtime.Types.ProcessToken,
+                              previousFlowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
 
     const createParams: any = {
       flowNodeId: flowNode.id,
@@ -251,6 +252,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       eventType: (flowNode as any).eventType,
       flowNodeInstanceId: flowNodeInstanceId,
       state: Runtime.Types.FlowNodeInstanceState.running,
+      previousFlowNodeInstanceId: previousFlowNodeInstanceId,
     };
 
     await this.flowNodeInstanceModel.create(createParams);
@@ -361,13 +363,14 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     const runtimeFlowNodeInstance: Runtime.Types.FlowNodeInstance = new Runtime.Types.FlowNodeInstance();
     runtimeFlowNodeInstance.id = dataModel.flowNodeInstanceId;
     runtimeFlowNodeInstance.flowNodeType = dataModel.flowNodeType;
-    runtimeFlowNodeInstance.eventType = dataModel.eventType;
+    runtimeFlowNodeInstance.eventType = EventType[dataModel.eventType];
     runtimeFlowNodeInstance.flowNodeId = dataModel.flowNodeId;
     runtimeFlowNodeInstance.processInstanceId = dataModel.processTokens[0].processInstanceId;
     runtimeFlowNodeInstance.processModelId = dataModel.processTokens[0].processModelId;
     runtimeFlowNodeInstance.correlationId = dataModel.processTokens[0].correlationId;
     runtimeFlowNodeInstance.state = dataModel.state;
     runtimeFlowNodeInstance.error = dataModel.error;
+    runtimeFlowNodeInstance.previousFlowNodeInstanceId = dataModel.previousFlowNodeInstanceId;
 
     const processTokens: Array<Runtime.Types.ProcessToken> = dataModel.processTokens.map(this._convertProcessTokenToRuntimeObject);
 
