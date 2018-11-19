@@ -77,7 +77,6 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       }],
       order: [
         [ 'createdAt', 'DESC' ],
-        [ this.processTokenModel, 'createdAt', 'DESC'],
       ],
     });
 
@@ -136,7 +135,6 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       }],
       order: [
         [ 'createdAt', 'DESC' ],
-        [ this.processTokenModel, 'createdAt', 'DESC'],
       ],
     });
 
@@ -160,7 +158,6 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       }],
       order: [
         [ 'createdAt', 'DESC' ],
-        [ this.processTokenModel, 'createdAt', 'DESC'],
       ],
     });
 
@@ -184,7 +181,6 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       }],
       order: [
         [ 'createdAt', 'DESC' ],
-        [ this.processTokenModel, 'createdAt', 'DESC'],
       ],
     });
 
@@ -210,7 +206,6 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       }],
       order: [
         [ 'createdAt', 'DESC' ],
-        [ this.processTokenModel, 'createdAt', 'DESC'],
       ],
     });
 
@@ -236,7 +231,6 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       }],
       order: [
         [ 'createdAt', 'DESC' ],
-        [ this.processTokenModel, 'createdAt', 'DESC'],
       ],
     });
 
