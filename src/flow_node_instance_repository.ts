@@ -75,6 +75,10 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
         model: this.processTokenModel,
         as: 'processTokens',
       }],
+      order: [
+        [ 'createdAt', 'DESC' ],
+        [ this.processTokenModel, 'createdAt', 'DESC'],
+      ],
     });
 
     const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
@@ -109,6 +113,9 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       where: {
         processInstanceId: processInstanceId,
       },
+      order: [
+        [ 'createdAt', 'DESC' ],
+      ],
     });
 
     const flowNodeInstances: Array<Runtime.Types.ProcessToken> = processInstanceTokens.map(this._convertProcessTokenToRuntimeObject.bind(this));
@@ -127,6 +134,10 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
         as: 'processTokens',
         required: true,
       }],
+      order: [
+        [ 'createdAt', 'DESC' ],
+        [ this.processTokenModel, 'createdAt', 'DESC'],
+      ],
     });
 
     // TODO - BUG: For some reason the "this" context gets lost here, unless a bind is made.
@@ -147,6 +158,10 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
         },
         required: true,
       }],
+      order: [
+        [ 'createdAt', 'DESC' ],
+        [ this.processTokenModel, 'createdAt', 'DESC'],
+      ],
     });
 
     // TODO - BUG: For some reason the "this" context gets lost here, unless a bind is made.
@@ -167,6 +182,62 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
         },
         required: true,
       }],
+      order: [
+        [ 'createdAt', 'DESC' ],
+        [ this.processTokenModel, 'createdAt', 'DESC'],
+      ],
+    });
+
+    // TODO - BUG: For some reason the "this" context gets lost here, unless a bind is made.
+    const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
+
+    return flowNodeInstances;
+  }
+
+  public async querySuspendedByCorrelation(correlationId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
+
+    const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
+      where: {
+        state: Runtime.Types.FlowNodeInstanceState.suspended,
+      },
+      include: [{
+        model: this.processTokenModel,
+        as: 'processTokens',
+        where: {
+          correlationId: correlationId,
+        },
+        required: true,
+      }],
+      order: [
+        [ 'createdAt', 'DESC' ],
+        [ this.processTokenModel, 'createdAt', 'DESC'],
+      ],
+    });
+
+    // TODO - BUG: For some reason the "this" context gets lost here, unless a bind is made.
+    const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
+
+    return flowNodeInstances;
+  }
+
+  public async querySuspendedByProcessModel(processModelId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
+
+    const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
+      where: {
+        state: Runtime.Types.FlowNodeInstanceState.suspended,
+      },
+      include: [{
+        model: this.processTokenModel,
+        as: 'processTokens',
+        where: {
+          processModelId: processModelId,
+        },
+        required: true,
+      }],
+      order: [
+        [ 'createdAt', 'DESC' ],
+        [ this.processTokenModel, 'createdAt', 'DESC'],
+      ],
     });
 
     // TODO - BUG: For some reason the "this" context gets lost here, unless a bind is made.
@@ -195,50 +266,6 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
 
     await this.processTokenModel.destroy(processTokenQueryParams);
     await this.flowNodeInstanceModel.destroy(flowNodeQueryParams);
-  }
-
-  public async querySuspendedByCorrelation(correlationId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
-
-    const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
-      where: {
-        state: Runtime.Types.FlowNodeInstanceState.suspended,
-      },
-      include: [{
-        model: this.processTokenModel,
-        as: 'processTokens',
-        where: {
-          correlationId: correlationId,
-        },
-        required: true,
-      }],
-    });
-
-    // TODO - BUG: For some reason the "this" context gets lost here, unless a bind is made.
-    const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
-
-    return flowNodeInstances;
-  }
-
-  public async querySuspendedByProcessModel(processModelId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
-
-    const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
-      where: {
-        state: Runtime.Types.FlowNodeInstanceState.suspended,
-      },
-      include: [{
-        model: this.processTokenModel,
-        as: 'processTokens',
-        where: {
-          processModelId: processModelId,
-        },
-        required: true,
-      }],
-    });
-
-    // TODO - BUG: For some reason the "this" context gets lost here, unless a bind is made.
-    const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
-
-    return flowNodeInstances;
   }
 
   public async persistOnEnter(flowNode: Model.Base.FlowNode,
