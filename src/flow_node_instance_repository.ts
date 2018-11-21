@@ -106,20 +106,46 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     return runtimeFlowNodeInstance;
   }
 
-  public async queryProcessTokensByProcessInstanceId(processInstanceId: string): Promise<Array<Runtime.Types.ProcessToken>> {
+  public async queryActive(): Promise<Array<Runtime.Types.FlowNodeInstance>> {
 
-    const processInstanceTokens: Array<ProcessToken> = await this.processTokenModel.findAll({
+    const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
       where: {
-        processInstanceId: processInstanceId,
+        state: {
+          $in: [Runtime.Types.FlowNodeInstanceState.suspended, Runtime.Types.FlowNodeInstanceState.running],
+        },
       },
-      order: [
-        [ 'createdAt', 'DESC' ],
-      ],
+      include: [{
+        model: this.processTokenModel,
+        as: 'processTokens',
+      }],
     });
 
-    const flowNodeInstances: Array<Runtime.Types.ProcessToken> = processInstanceTokens.map(this._convertProcessTokenToRuntimeObject.bind(this));
+    const runtimeFlowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
 
-    return flowNodeInstances;
+    return runtimeFlowNodeInstances;
+  }
+
+  public async queryActiveByProcessInstance(processInstanceId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
+
+    const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
+      where: {
+        state: {
+          $in: [Runtime.Types.FlowNodeInstanceState.suspended, Runtime.Types.FlowNodeInstanceState.running],
+        },
+      },
+      include: [{
+        model: this.processTokenModel,
+        as: 'processTokens',
+        where: {
+          processInstanceId: processInstanceId,
+        },
+        required: true,
+      }],
+    });
+
+    const runtimeFlowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
+
+    return runtimeFlowNodeInstances;
   }
 
   public async queryByState(state: Runtime.Types.FlowNodeInstanceState): Promise<Array<Runtime.Types.FlowNodeInstance>> {
@@ -138,8 +164,6 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       ],
     });
 
-    // TODO - BUG: For some reason the "this" context gets lost here, unless a bind is made.
-    // This effect has thus far been observed only in those operations that involve the consumer api.
     const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
 
     return flowNodeInstances;
@@ -161,8 +185,6 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       ],
     });
 
-    // TODO - BUG: For some reason the "this" context gets lost here, unless a bind is made.
-    // This effect has thus far been observed only in those operations that involve the consumer api.
     const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
 
     return flowNodeInstances;
@@ -184,7 +206,6 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       ],
     });
 
-    // TODO - BUG: For some reason the "this" context gets lost here, unless a bind is made.
     const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
 
     return flowNodeInstances;
@@ -209,7 +230,6 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       ],
     });
 
-    // TODO - BUG: For some reason the "this" context gets lost here, unless a bind is made.
     const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
 
     return flowNodeInstances;
@@ -234,8 +254,23 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       ],
     });
 
-    // TODO - BUG: For some reason the "this" context gets lost here, unless a bind is made.
     const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
+
+    return flowNodeInstances;
+  }
+
+  public async queryProcessTokensByProcessInstanceId(processInstanceId: string): Promise<Array<Runtime.Types.ProcessToken>> {
+
+    const processInstanceTokens: Array<ProcessToken> = await this.processTokenModel.findAll({
+      where: {
+        processInstanceId: processInstanceId,
+      },
+      order: [
+        [ 'createdAt', 'DESC' ],
+      ],
+    });
+
+    const flowNodeInstances: Array<Runtime.Types.ProcessToken> = processInstanceTokens.map(this._convertProcessTokenToRuntimeObject.bind(this));
 
     return flowNodeInstances;
   }
