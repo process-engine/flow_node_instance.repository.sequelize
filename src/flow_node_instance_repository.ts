@@ -1,6 +1,6 @@
 import {NotFoundError} from '@essential-projects/errors_ts';
 import {getConnection} from '@essential-projects/sequelize_connection_manager';
-import {EventType, IFlowNodeInstanceRepository, Model, Runtime} from '@process-engine/process_engine_contracts';
+import {BpmnType, EventType, IFlowNodeInstanceRepository, Model, Runtime} from '@process-engine/process_engine_contracts';
 
 import * as clone from 'clone';
 import * as Sequelize from 'sequelize';
@@ -362,8 +362,8 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
 
     const runtimeFlowNodeInstance: Runtime.Types.FlowNodeInstance = new Runtime.Types.FlowNodeInstance();
     runtimeFlowNodeInstance.id = dataModel.flowNodeInstanceId;
-    runtimeFlowNodeInstance.flowNodeType = dataModel.flowNodeType;
-    runtimeFlowNodeInstance.eventType = EventType[dataModel.eventType];
+    runtimeFlowNodeInstance.flowNodeType = <BpmnType> dataModel.flowNodeType;
+    runtimeFlowNodeInstance.eventType = <EventType> dataModel.eventType;
     runtimeFlowNodeInstance.flowNodeId = dataModel.flowNodeId;
     runtimeFlowNodeInstance.processInstanceId = dataModel.processTokens[0].processInstanceId;
     runtimeFlowNodeInstance.processModelId = dataModel.processTokens[0].processModelId;
