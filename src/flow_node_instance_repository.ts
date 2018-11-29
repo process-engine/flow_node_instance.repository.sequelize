@@ -1,5 +1,5 @@
 import {NotFoundError} from '@essential-projects/errors_ts';
-import {getConnection} from '@essential-projects/sequelize_connection_manager';
+import {SequelizeConnectionManager} from '@essential-projects/sequelize_connection_manager';
 import {BpmnType, EventType, IFlowNodeInstanceRepository, Model, Runtime} from '@process-engine/process_engine_contracts';
 
 import * as clone from 'clone';
@@ -20,7 +20,12 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
   private _flowNodeInstanceModel: Sequelize.Model<FlowNodeInstanceModel, IFlowNodeInstanceAttributes>;
   private _processTokenModel: Sequelize.Model<ProcessToken, IProcessTokenAttributes>;
 
-  private sequelize: Sequelize.Sequelize;
+  private _sequelize: Sequelize.Sequelize;
+  private _connectionManager: SequelizeConnectionManager;
+
+  constructor(connectionManager: SequelizeConnectionManager) {
+    this._connectionManager = connectionManager;
+  }
 
   private get flowNodeInstanceModel(): Sequelize.Model<FlowNodeInstanceModel, IFlowNodeInstanceAttributes> {
     return this._flowNodeInstanceModel;
@@ -31,11 +36,11 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
   }
 
   public async initialize(): Promise<void> {
-    this.sequelize = await getConnection(this.config);
-    await loadModels(this.sequelize);
+    this._sequelize = await this._connectionManager.getConnection(this.config);
+    await loadModels(this._sequelize);
 
-    this._flowNodeInstanceModel = this.sequelize.models.FlowNodeInstance;
-    this._processTokenModel = this.sequelize.models.ProcessToken;
+    this._flowNodeInstanceModel = this._sequelize.models.FlowNodeInstance;
+    this._processTokenModel = this._sequelize.models.ProcessToken;
   }
 
   public async querySpecificFlowNode(correlationId: string, processModelId: string, flowNodeId: string): Promise<Runtime.Types.FlowNodeInstance> {
