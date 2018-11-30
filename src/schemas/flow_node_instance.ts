@@ -11,8 +11,8 @@ export interface IFlowNodeInstanceAttributes {
   correlationId: string;
   processModelId: string;
   processInstanceId: string;
-  parentProcessInstanceId?: "string";
   identity: any;
+  parentProcessInstanceId?: string;
   state: Runtime.Types.FlowNodeInstanceState;
   error?: string;
   // Contains the association to the ProcessToken model.
