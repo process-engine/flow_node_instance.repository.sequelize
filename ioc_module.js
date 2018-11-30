@@ -5,6 +5,7 @@ const FlowNodeInstanceRepository = require('./dist/commonjs/index').FlowNodeInst
 function registerInContainer(container) {
 
   container.register('FlowNodeInstanceRepository', FlowNodeInstanceRepository)
+    .dependencies('SequelizeConnectionManager')
     .configure('process_engine:flow_node_instance_repository')
     .singleton();
 }
