@@ -153,6 +153,32 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
     return runtimeFlowNodeInstances;
   }
 
+  public async queryActiveByCorrelationAndProcessModel(correlationId: string,
+                                                       processModelId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
+
+    const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
+      where: {
+        state: {
+          $in: [Runtime.Types.FlowNodeInstanceState.suspended, Runtime.Types.FlowNodeInstanceState.running],
+        },
+      },
+      include: [{
+        model: this.processTokenModel,
+        as: 'processTokens',
+        where: {
+          correlationId: correlationId,
+          processModelId: processModelId,
+        },
+        required: true,
+      }],
+    });
+
+    // TODO - BUG: For some reason the "this" context gets lost here, unless a bind is made.
+    const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
+
+    return flowNodeInstances;
+  }
+
   public async queryByState(state: Runtime.Types.FlowNodeInstanceState): Promise<Array<Runtime.Types.FlowNodeInstance>> {
 
     const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
@@ -211,6 +237,26 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository {
       ],
     });
 
+    const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
+
+    return flowNodeInstances;
+  }
+
+  public async queryByCorrelationAndProcessModel(correlationId: string, processModelId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
+
+    const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
+      include: [{
+        model: this.processTokenModel,
+        as: 'processTokens',
+        where: {
+          correlationId: correlationId,
+          processModelId: processModelId,
+        },
+        required: true,
+      }],
+    });
+
+    // TODO - BUG: For some reason the "this" context gets lost here, unless a bind is made.
     const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
 
     return flowNodeInstances;
