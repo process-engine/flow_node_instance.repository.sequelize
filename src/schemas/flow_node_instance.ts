@@ -47,15 +47,15 @@ export function defineFlowNodeInstance(sequelize: Sequelize.Sequelize): Sequeliz
     },
     correlationId: {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     processModelId: {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     processInstanceId: {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: true,
     },
     parentProcessInstanceId: {
       type: Sequelize.STRING,
@@ -65,7 +65,7 @@ export function defineFlowNodeInstance(sequelize: Sequelize.Sequelize): Sequeliz
       // Since the identity is also a serialised object, we should use TEXT instead of string here.
       // See ProcessToken.Payload.
       type: Sequelize.TEXT,
-      allowNull: false,
+      allowNull: true,
     },
     state: {
       type: Sequelize.STRING,
