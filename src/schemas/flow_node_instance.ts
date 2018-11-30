@@ -4,7 +4,6 @@ import {ProcessToken} from './process_token';
 import {Runtime} from '@process-engine/process_engine_contracts';
 
 export interface IFlowNodeInstanceAttributes {
-  id: string;
   flowNodeInstanceId: string;
   flowNodeId: string;
   flowNodeType: string;
@@ -24,11 +23,6 @@ export type FlowNodeInstance = Sequelize.Instance<IFlowNodeInstanceAttributes> &
 export function defineFlowNodeInstance(sequelize: Sequelize.Sequelize): Sequelize.Model<FlowNodeInstance, IFlowNodeInstanceAttributes> {
 
   const attributes: SequelizeAttributes<IFlowNodeInstanceAttributes> = {
-    id: {
-      type: Sequelize.UUID,
-      primaryKey: true,
-      defaultValue: Sequelize.UUIDV4,
-    },
     flowNodeInstanceId: {
       type: Sequelize.STRING,
       allowNull: false,

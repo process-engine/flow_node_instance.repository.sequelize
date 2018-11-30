@@ -2,7 +2,6 @@ import * as moment from 'moment';
 import * as Sequelize from 'sequelize';
 
 export interface IProcessTokenAttributes {
-  id: string;
   processInstanceId: string;
   processModelId: string;
   correlationId: string;
@@ -18,11 +17,6 @@ export type ProcessToken = Sequelize.Instance<IProcessTokenAttributes> & IProces
 
 export function defineProcessToken(sequelize: Sequelize.Sequelize): Sequelize.Model<ProcessToken, IProcessTokenAttributes> {
   const attributes: SequelizeAttributes<IProcessTokenAttributes> = {
-    id: {
-      type: Sequelize.UUID,
-      primaryKey: true,
-      defaultValue: Sequelize.UUIDV4,
-    },
     processInstanceId: {
       type: Sequelize.STRING,
       allowNull: false,
