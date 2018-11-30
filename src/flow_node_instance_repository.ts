@@ -489,12 +489,13 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const runtimeFlowNodeInstance: Runtime.Types.FlowNodeInstance = new Runtime.Types.FlowNodeInstance();
     runtimeFlowNodeInstance.id = dataModel.flowNodeInstanceId;
+    runtimeFlowNodeInstance.flowNodeId = dataModel.flowNodeId;
     runtimeFlowNodeInstance.flowNodeType = <BpmnType> dataModel.flowNodeType;
     runtimeFlowNodeInstance.eventType = <EventType> dataModel.eventType;
-    runtimeFlowNodeInstance.flowNodeId = dataModel.flowNodeId;
-    runtimeFlowNodeInstance.processInstanceId = dataModel.processTokens[0].processInstanceId;
-    runtimeFlowNodeInstance.processModelId = dataModel.processTokens[0].processModelId;
-    runtimeFlowNodeInstance.correlationId = dataModel.processTokens[0].correlationId;
+    runtimeFlowNodeInstance.correlationId = dataModel.correlationId;
+    runtimeFlowNodeInstance.processModelId = dataModel.processModelId;
+    runtimeFlowNodeInstance.processInstanceId = dataModel.processInstanceId;
+    runtimeFlowNodeInstance.identity = dataModel.identity;
     runtimeFlowNodeInstance.state = dataModel.state;
     runtimeFlowNodeInstance.error = dataModel.error;
     runtimeFlowNodeInstance.previousFlowNodeInstanceId = dataModel.previousFlowNodeInstanceId;
@@ -509,13 +510,8 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
   private _convertProcessTokenToRuntimeObject(dataModel: ProcessToken): Runtime.Types.ProcessToken {
 
     const processToken: Runtime.Types.ProcessToken = new Runtime.Types.ProcessToken();
-    processToken.processInstanceId = dataModel.processInstanceId;
-    processToken.processModelId = dataModel.processModelId;
-    processToken.correlationId = dataModel.correlationId;
     processToken.flowNodeInstanceId = dataModel.flowNodeInstanceId;
-    processToken.identity = dataModel.identity ? JSON.parse(dataModel.identity) : undefined;
     processToken.createdAt = dataModel.createdAt;
-    processToken.caller = dataModel.caller;
     processToken.type = Runtime.Types.ProcessTokenType[dataModel.type];
     processToken.payload = dataModel.payload ? JSON.parse(dataModel.payload) : {};
 
