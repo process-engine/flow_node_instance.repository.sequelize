@@ -34,7 +34,7 @@ export function defineFlowNodeInstance(sequelize: Sequelize.Sequelize): Sequeliz
     },
     flowNodeType: {
       type: Sequelize.STRING,
-      allowNull: false,
+      allowNull: true, // With regards to old databases, null values must be allowed here
     },
     state: {
       type: Sequelize.STRING,
