@@ -44,7 +44,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     logger.verbose('Initializing Sequelize connection and loading models...');
     const connectionAlreadyEstablished: boolean = this._sequelize !== undefined;
     if (connectionAlreadyEstablished) {
-      logger.verbose('Repository already initialized.');
+      logger.verbose('Repository already initialized. Done.');
 
       return;
     }
@@ -60,7 +60,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     logger.verbose('Disposing connection');
     await this._connectionManager.destroyConnection(this.config);
     this._sequelize = undefined;
-    logger.verbose('done');
+    logger.verbose('Done.');
   }
 
   public async querySpecificFlowNode(correlationId: string, processModelId: string, flowNodeId: string): Promise<Runtime.Types.FlowNodeInstance> {
