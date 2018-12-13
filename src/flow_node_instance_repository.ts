@@ -491,7 +491,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     createParams.flowNodeInstanceId = flowNodeInstanceId;*/
     const createParams: any = {
       createdAt: token.createdAt,
-      type: token.type,
+      type: type,
       payload: JSON.stringify(token.payload),
       flowNodeInstanceId: token.flowNodeInstanceId,
     };
