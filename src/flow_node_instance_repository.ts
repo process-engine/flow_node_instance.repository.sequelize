@@ -495,25 +495,32 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     runtimeFlowNodeInstance.correlationId = dataModel.correlationId;
     runtimeFlowNodeInstance.processModelId = dataModel.processModelId;
     runtimeFlowNodeInstance.processInstanceId = dataModel.processInstanceId;
-    runtimeFlowNodeInstance.identity = dataModel.identity;
     runtimeFlowNodeInstance.state = dataModel.state;
     runtimeFlowNodeInstance.error = dataModel.error;
     runtimeFlowNodeInstance.previousFlowNodeInstanceId = dataModel.previousFlowNodeInstanceId;
 
-    const processTokens: Array<Runtime.Types.ProcessToken> = dataModel.processTokens.map(this._convertProcessTokenToRuntimeObject);
+    const processTokens: Array<Runtime.Types.ProcessToken> = dataModel.processTokens.map((currentToken: ProcessToken) => {
+      return this._convertProcessTokenToRuntimeObject(currentToken, dataModel);
+    });
 
     runtimeFlowNodeInstance.tokens = processTokens;
 
     return runtimeFlowNodeInstance;
   }
 
-  private _convertProcessTokenToRuntimeObject(dataModel: ProcessToken): Runtime.Types.ProcessToken {
+  private _convertProcessTokenToRuntimeObject(dataModel: ProcessToken, flowNodeInstance: FlowNodeInstanceModel): Runtime.Types.ProcessToken {
 
     const processToken: Runtime.Types.ProcessToken = new Runtime.Types.ProcessToken();
     processToken.flowNodeInstanceId = dataModel.flowNodeInstanceId;
     processToken.createdAt = dataModel.createdAt;
     processToken.type = Runtime.Types.ProcessTokenType[dataModel.type];
     processToken.payload = dataModel.payload ? JSON.parse(dataModel.payload) : {};
+
+    processToken.processInstanceId = flowNodeInstance.processInstanceId;
+    processToken.processModelId = flowNodeInstance.processModelId;
+    processToken.correlationId = flowNodeInstance.correlationId;
+    processToken.identity = flowNodeInstance.identity;
+    processToken.caller = flowNodeInstance.parentProcessInstanceId;
 
     return processToken;
   }
