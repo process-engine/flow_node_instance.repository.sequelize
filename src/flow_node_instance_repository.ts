@@ -210,7 +210,6 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
         [ 'createdAt', 'DESC' ],
       ],
     });
-
     const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
 
     return flowNodeInstances;
@@ -538,7 +537,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     processToken.processInstanceId = flowNodeInstance.processInstanceId;
     processToken.processModelId = flowNodeInstance.processModelId;
     processToken.correlationId = flowNodeInstance.correlationId;
-    processToken.identity = processToken.identity ? JSON.parse(flowNodeInstance.identity) : {};
+    processToken.identity = flowNodeInstance.identity ? JSON.parse(flowNodeInstance.identity) : {};
     processToken.caller = flowNodeInstance.parentProcessInstanceId;
 
     return processToken;
