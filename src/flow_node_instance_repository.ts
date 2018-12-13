@@ -528,7 +528,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     processToken.processInstanceId = flowNodeInstance.processInstanceId;
     processToken.processModelId = flowNodeInstance.processModelId;
     processToken.correlationId = flowNodeInstance.correlationId;
-    processToken.identity = flowNodeInstance.identity;
+    processToken.identity = JSON.parse(flowNodeInstance.identity);
     processToken.caller = flowNodeInstance.parentProcessInstanceId;
 
     return processToken;
