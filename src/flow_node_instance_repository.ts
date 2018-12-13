@@ -260,13 +260,13 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
   public async queryByCorrelationAndProcessModel(correlationId: string, processModelId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
 
     const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
+      where: {
+        correlationId: correlationId,
+        processModelId: processModelId,
+      },
       include: [{
         model: this.processTokenModel,
         as: 'processTokens',
-        where: {
-          correlationId: correlationId,
-          processModelId: processModelId,
-        },
         required: true,
       }],
     });
