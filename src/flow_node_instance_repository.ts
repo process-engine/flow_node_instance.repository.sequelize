@@ -64,19 +64,16 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
   }
 
   public async querySpecificFlowNode(correlationId: string, processModelId: string, flowNodeId: string): Promise<Runtime.Types.FlowNodeInstance> {
-
+    console.log('querySpecificFlowNode');
     const result: FlowNodeInstanceModel = await this.flowNodeInstanceModel.findOne({
       where: {
+        correlationId: correlationId,
+        processModelId: processModelId,
         flowNodeId: flowNodeId,
       },
       include: [{
         model: this.processTokenModel,
         as: 'processTokens',
-        required: true,
-        where: {
-          correlationId: correlationId,
-          processModelId: processModelId,
-        },
       }],
     });
 
@@ -91,7 +88,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
   }
 
   public async queryByFlowNodeId(flowNodeId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
-
+    console.log('queryByFlowNodeId');
     const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
       where: {
         flowNodeId: flowNodeId,
@@ -111,7 +108,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
   }
 
   public async queryByInstanceId(flowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
-
+    console.log('queryByInstanceId');
     const matchingFlowNodeInstance: FlowNodeInstanceModel = await this.flowNodeInstanceModel.findOne({
       where: {
         flowNodeInstanceId: flowNodeInstanceId,
@@ -132,7 +129,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
   }
 
   public async queryActive(): Promise<Array<Runtime.Types.FlowNodeInstance>> {
-
+    console.log('queryActive');
     const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
       where: {
         state: {
@@ -151,7 +148,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
   }
 
   public async queryActiveByProcessInstance(processInstanceId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
-
+    console.log('queryActiveByProcessInstance');
     const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
       where: {
         state: {
@@ -200,7 +197,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
   }
 
   public async queryByState(state: Runtime.Types.FlowNodeInstanceState): Promise<Array<Runtime.Types.FlowNodeInstance>> {
-
+    console.log('QueryByState');
     const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
       where: {
         state: state,
@@ -221,14 +218,14 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
   }
 
   public async queryByCorrelation(correlationId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
-
+    console.log('queryByCorrelation');
     const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
+      where: {
+        correlationId: correlationId,
+      },
       include: [{
         model: this.processTokenModel,
         as: 'processTokens',
-        where: {
-          correlationId: correlationId,
-        },
         required: true,
       }],
       order: [
@@ -244,12 +241,12 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
   public async queryByProcessModel(processModelId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
 
     const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
+      where: {
+        processModelId: processModelId,
+      },
       include: [{
         model: this.processTokenModel,
         as: 'processTokens',
-        where: {
-          processModelId: processModelId,
-        },
         required: true,
       }],
       order: [
@@ -283,17 +280,15 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
   }
 
   public async querySuspendedByCorrelation(correlationId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
-
+    console.log('querySuspendedByCorrelation');
     const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
       where: {
+        correlationId: correlationId,
         state: Runtime.Types.FlowNodeInstanceState.suspended,
       },
       include: [{
         model: this.processTokenModel,
         as: 'processTokens',
-        where: {
-          correlationId: correlationId,
-        },
         required: true,
       }],
       order: [
@@ -307,17 +302,15 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
   }
 
   public async querySuspendedByProcessModel(processModelId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
-
+    console.log('querySuspendedByProcessModel');
     const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
       where: {
+        processModelId: processModelId,
         state: Runtime.Types.FlowNodeInstanceState.suspended,
       },
       include: [{
         model: this.processTokenModel,
         as: 'processTokens',
-        where: {
-          processModelId: processModelId,
-        },
         required: true,
       }],
       order: [
@@ -331,8 +324,8 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
   }
 
   public async queryProcessTokensByProcessInstanceId(processInstanceId: string): Promise<Array<Runtime.Types.ProcessToken>> {
-
-    const processInstanceTokens: Array<ProcessToken> = await this.processTokenModel.findAll({
+    console.log('queryProcessTokensByProcessInstanceId');
+    const flowNodeInstanceModelWithId: FlowNodeInstanceModel = await this.flowNodeInstanceModel.findOne({
       where: {
         processInstanceId: processInstanceId,
       },
@@ -341,12 +334,15 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       ],
     });
 
+    const processInstanceTokens: Array<ProcessToken> = flowNodeInstanceModelWithId.processTokens;
+
     const flowNodeInstances: Array<Runtime.Types.ProcessToken> = processInstanceTokens.map(this._convertProcessTokenToRuntimeObject.bind(this));
 
     return flowNodeInstances;
   }
 
   public async deleteByProcessModelId(processModelId: string): Promise<void> {
+    console.log('deleteByProcessModelId');
     const flowNodeInstancesToRemove: Array<Runtime.Types.FlowNodeInstance> = await this.queryByProcessModel(processModelId);
     const flowNodeInstanceIdsToRemove: Array<string> = flowNodeInstancesToRemove.map(((flowNodeInstance: Runtime.Types.FlowNodeInstance): string => {
       return flowNodeInstance.id;
@@ -372,6 +368,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
                               flowNodeInstanceId: string,
                               processToken: Runtime.Types.ProcessToken,
                               previousFlowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
+    console.log('persistOnEnter');
     const createParams: any = {
       flowNodeInstanceId: flowNodeInstanceId,
       flowNodeId: flowNode.id,
@@ -395,7 +392,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
   public async persistOnExit(flowNode: Model.Base.FlowNode,
                              flowNodeInstanceId: string,
                              processToken: Runtime.Types.ProcessToken): Promise<Runtime.Types.FlowNodeInstance> {
-
+    console.log('persistOnExit');
     const flowNodeInstanceState: Runtime.Types.FlowNodeInstanceState = Runtime.Types.FlowNodeInstanceState.finished;
     const processTokenType: Runtime.Types.ProcessTokenType = Runtime.Types.ProcessTokenType.onExit;
 
@@ -406,7 +403,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
                               flowNodeInstanceId: string,
                               processToken: Runtime.Types.ProcessToken,
                               error: Error): Promise<Runtime.Types.FlowNodeInstance> {
-
+    console.log('persistOnError');
     const flowNodeInstanceState: Runtime.Types.FlowNodeInstanceState = Runtime.Types.FlowNodeInstanceState.error;
     const processTokenType: Runtime.Types.ProcessTokenType = Runtime.Types.ProcessTokenType.onExit;
 
