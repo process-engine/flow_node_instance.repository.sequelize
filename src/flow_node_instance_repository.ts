@@ -340,7 +340,9 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const processInstanceTokens: Array<ProcessToken> = flowNodeInstanceModelWithId.processTokens;
 
-    const flowNodeInstances: Array<Runtime.Types.ProcessToken> = processInstanceTokens.map(this._convertProcessTokenToRuntimeObject.bind(this));
+    const flowNodeInstances: Array<Runtime.Types.ProcessToken> = processInstanceTokens.map((currentToken: ProcessToken) => {
+      return this._convertProcessTokenToRuntimeObject(currentToken, flowNodeInstanceModelWithId);
+    });
 
     return flowNodeInstances;
   }
