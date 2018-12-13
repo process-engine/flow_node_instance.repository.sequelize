@@ -331,6 +331,11 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       where: {
         processInstanceId: processInstanceId,
       },
+      include: [{
+        model: this.processTokenModel,
+        as: 'processTokens',
+        required: true,
+      }],
       order: [
         [ 'createdAt', 'DESC' ],
       ],
