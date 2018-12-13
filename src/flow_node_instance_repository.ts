@@ -74,6 +74,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       include: [{
         model: this.processTokenModel,
         as: 'processTokens',
+        required: true,
       }],
     });
 
@@ -116,6 +117,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       include: [{
         model: this.processTokenModel,
         as: 'processTokens',
+        required: true,
       }],
     });
 
