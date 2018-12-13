@@ -372,12 +372,16 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
                               flowNodeInstanceId: string,
                               processToken: Runtime.Types.ProcessToken,
                               previousFlowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
-
     const createParams: any = {
+      flowNodeInstanceId: flowNodeInstanceId,
       flowNodeId: flowNode.id,
       flowNodeType: flowNode.bpmnType,
       eventType: (flowNode as any).eventType,
-      flowNodeInstanceId: flowNodeInstanceId,
+      correlationId: processToken.correlationId,
+      processModelId: processToken.processModelId,
+      processInstanceId: processToken.processInstanceId,
+      identity: JSON.stringify(processToken.identity),
+      parentProcessInstanceId: processToken.caller,
       state: Runtime.Types.FlowNodeInstanceState.running,
       previousFlowNodeInstanceId: previousFlowNodeInstanceId,
     };
@@ -476,11 +480,17 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
                                                        token: Runtime.Types.ProcessToken,
                                                        type: Runtime.Types.ProcessTokenType): Promise<void> {
 
-    const createParams: any = clone(token);
+    /*const createParams: any = clone(token);
     createParams.identity = JSON.stringify(createParams.identity);
     createParams.payload = JSON.stringify(createParams.payload);
     createParams.type = type;
-    createParams.flowNodeInstanceId = flowNodeInstanceId;
+    createParams.flowNodeInstanceId = flowNodeInstanceId;*/
+    const createParams: any = {
+      createdAt: token.createdAt,
+      type: token.type,
+      payload: JSON.stringify(token.payload),
+      flowNodeInstanceId: token.flowNodeInstanceId,
+    };
 
     await this.processTokenModel.create(createParams);
   }
