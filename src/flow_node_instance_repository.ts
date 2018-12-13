@@ -324,7 +324,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
   public async queryProcessTokensByProcessInstanceId(processInstanceId: string): Promise<Array<Runtime.Types.ProcessToken>> {
 
-    const flowNodeInstanceModelWithId: FlowNodeInstanceModel = await this.flowNodeInstanceModel.findOne({
+    const flowNodeInstanceModelWithId: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
       where: {
         processInstanceId: processInstanceId,
       },
@@ -338,13 +338,24 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       ],
     });
 
-    const processInstanceTokens: Array<ProcessToken> = flowNodeInstanceModelWithId.processTokens;
+    const processTokensFromProcessInstances: Array<Runtime.Types.ProcessToken> = [];
 
-    const flowNodeInstances: Array<Runtime.Types.ProcessToken> = processInstanceTokens.map((currentToken: ProcessToken) => {
-      return this._convertProcessTokenToRuntimeObject(currentToken, flowNodeInstanceModelWithId);
+    /**
+     * Todo: This can actually be archived by a single database query, which
+     * should bring the runtime a bit down then a nested iteration.
+     */
+    flowNodeInstanceModelWithId.map((currentFlowNodeInstance: FlowNodeInstanceModel) => {
+      const instanceProcessTokens: Array<ProcessToken> = currentFlowNodeInstance.processTokens;
+
+      instanceProcessTokens.map((currentInstanceToken: ProcessToken) => {
+        const convertedInstanceToken: Runtime.Types.ProcessToken =
+          this._convertProcessTokenToRuntimeObject(currentInstanceToken, currentFlowNodeInstance);
+
+        processTokensFromProcessInstances.push(convertedInstanceToken);
+      });
     });
 
-    return flowNodeInstances;
+    return processTokensFromProcessInstances;
   }
 
   public async deleteByProcessModelId(processModelId: string): Promise<void> {
