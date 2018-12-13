@@ -343,10 +343,10 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
      * Todo: This can actually be archived by a single database query, which
      * should bring the runtime a bit down then a nested iteration.
      */
-    flowNodeInstanceModelWithId.map((currentFlowNodeInstance: FlowNodeInstanceModel) => {
+    flowNodeInstanceModelWithId.forEach((currentFlowNodeInstance: FlowNodeInstanceModel) => {
       const instanceProcessTokens: Array<ProcessToken> = currentFlowNodeInstance.processTokens;
 
-      instanceProcessTokens.map((currentInstanceToken: ProcessToken) => {
+      instanceProcessTokens.forEach((currentInstanceToken: ProcessToken) => {
         const convertedInstanceToken: Runtime.Types.ProcessToken =
           this._convertProcessTokenToRuntimeObject(currentInstanceToken, currentFlowNodeInstance);
 
