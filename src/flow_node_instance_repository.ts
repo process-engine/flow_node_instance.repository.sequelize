@@ -339,10 +339,6 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const processTokens: Array<Runtime.Types.ProcessToken> = [];
 
-    /**
-     * Todo: This can actually be archived by a single database query, which
-     * should bring the runtime a bit down then a nested iteration.
-     */
     results.forEach((flowNodeInstance: FlowNodeInstanceModel) => {
       const instanceProcessTokens: Array<ProcessToken> = flowNodeInstance.processTokens;
 
