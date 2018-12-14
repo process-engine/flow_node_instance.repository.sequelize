@@ -366,13 +366,17 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const flowNodeQueryParams: Sequelize.DestroyOptions = {
       where: {
-        flowNodeInstanceId: flowNodeInstanceIdsToRemove,
+        flowNodeInstanceId: {
+          $in: flowNodeInstanceIdsToRemove,
+        },
       },
     };
 
     const processTokenQueryParams: Sequelize.DestroyOptions = {
       where: {
-        processModelId: processModelId,
+        flowNodeInstanceId: {
+          $in: flowNodeInstanceIdsToRemove,
+        },
       },
     };
 
