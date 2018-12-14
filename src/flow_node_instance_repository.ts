@@ -323,7 +323,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
   public async queryProcessTokensByProcessInstanceId(processInstanceId: string): Promise<Array<Runtime.Types.ProcessToken>> {
 
-    const flowNodeInstanceModelWithId: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
+    const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
       where: {
         processInstanceId: processInstanceId,
       },
@@ -337,24 +337,24 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       ],
     });
 
-    const processTokensFromProcessInstances: Array<Runtime.Types.ProcessToken> = [];
+    const processTokens: Array<Runtime.Types.ProcessToken> = [];
 
     /**
      * Todo: This can actually be archived by a single database query, which
      * should bring the runtime a bit down then a nested iteration.
      */
-    flowNodeInstanceModelWithId.forEach((currentFlowNodeInstance: FlowNodeInstanceModel) => {
-      const instanceProcessTokens: Array<ProcessToken> = currentFlowNodeInstance.processTokens;
+    results.forEach((flowNodeInstance: FlowNodeInstanceModel) => {
+      const instanceProcessTokens: Array<ProcessToken> = flowNodeInstance.processTokens;
 
-      instanceProcessTokens.forEach((currentInstanceToken: ProcessToken) => {
-        const convertedInstanceToken: Runtime.Types.ProcessToken =
-          this._convertProcessTokenToRuntimeObject(currentInstanceToken, currentFlowNodeInstance);
+      instanceProcessTokens.forEach((token: ProcessToken) => {
+        const runtimeProcessToken: Runtime.Types.ProcessToken =
+          this._convertProcessTokenToRuntimeObject(token, flowNodeInstance);
 
-        processTokensFromProcessInstances.push(convertedInstanceToken);
+        processTokens.push(runtimeProcessToken);
       });
     });
 
-    return processTokensFromProcessInstances;
+    return processTokens;
   }
 
   public async deleteByProcessModelId(processModelId: string): Promise<void> {
