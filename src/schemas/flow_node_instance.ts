@@ -11,7 +11,7 @@ export interface IFlowNodeInstanceAttributes {
   correlationId: string;
   processModelId: string;
   processInstanceId: string;
-  identity: any;
+  identity: string;
   parentProcessInstanceId?: string;
   state: Runtime.Types.FlowNodeInstanceState;
   error?: string;

@@ -385,7 +385,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
                               processToken: Runtime.Types.ProcessToken,
                               previousFlowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
 
-    const createParams: any = {
+    const createParams: IFlowNodeInstanceAttributes = {
       flowNodeInstanceId: flowNodeInstanceId,
       flowNodeId: flowNode.id,
       flowNodeType: flowNode.bpmnType,
@@ -493,7 +493,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
                                                        token: Runtime.Types.ProcessToken,
                                                        type: Runtime.Types.ProcessTokenType): Promise<void> {
 
-    const createParams: any = {
+    const createParams: IProcessTokenAttributes = {
       createdAt: token.createdAt,
       type: type,
       payload: JSON.stringify(token.payload),
