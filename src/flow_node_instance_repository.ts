@@ -98,7 +98,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
         required: true,
       }],
       order: [
-        [ 'createdAt', 'DESC' ],
+        [ 'id', 'ASC' ],
       ],
     });
 
@@ -205,7 +205,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
         required: true,
       }],
       order: [
-        [ 'createdAt', 'DESC' ],
+        [ 'id', 'ASC' ],
       ],
     });
     const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
@@ -225,7 +225,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
         required: true,
       }],
       order: [
-        [ 'createdAt', 'DESC' ],
+        [ 'id', 'ASC' ],
       ],
     });
 
@@ -246,7 +246,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
         required: true,
       }],
       order: [
-        [ 'createdAt', 'DESC' ],
+        [ 'id', 'ASC' ],
       ],
     });
 
@@ -288,7 +288,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
         required: true,
       }],
       order: [
-        [ 'createdAt', 'DESC' ],
+        [ 'id', 'ASC' ],
       ],
     });
 
@@ -310,7 +310,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
         required: true,
       }],
       order: [
-        [ 'createdAt', 'DESC' ],
+        [ 'id', 'ASC' ],
       ],
     });
 
@@ -331,7 +331,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
         required: true,
       }],
       order: [
-        [ 'createdAt', 'DESC' ],
+        [ 'id', 'ASC' ],
       ],
     });
 
