@@ -64,19 +64,16 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
   }
 
   public async querySpecificFlowNode(correlationId: string, processModelId: string, flowNodeId: string): Promise<Runtime.Types.FlowNodeInstance> {
-
     const result: FlowNodeInstanceModel = await this.flowNodeInstanceModel.findOne({
       where: {
+        correlationId: correlationId,
+        processModelId: processModelId,
         flowNodeId: flowNodeId,
       },
       include: [{
         model: this.processTokenModel,
         as: 'processTokens',
         required: true,
-        where: {
-          correlationId: correlationId,
-          processModelId: processModelId,
-        },
       }],
     });
 
@@ -91,7 +88,6 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
   }
 
   public async queryByFlowNodeId(flowNodeId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
-
     const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
       where: {
         flowNodeId: flowNodeId,
@@ -111,7 +107,6 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
   }
 
   public async queryByInstanceId(flowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
-
     const matchingFlowNodeInstance: FlowNodeInstanceModel = await this.flowNodeInstanceModel.findOne({
       where: {
         flowNodeInstanceId: flowNodeInstanceId,
@@ -119,6 +114,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       include: [{
         model: this.processTokenModel,
         as: 'processTokens',
+        required: true,
       }],
     });
 
@@ -214,7 +210,6 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
         [ 'createdAt', 'DESC' ],
       ],
     });
-
     const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
 
     return flowNodeInstances;
@@ -223,12 +218,12 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
   public async queryByCorrelation(correlationId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
 
     const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
+      where: {
+        correlationId: correlationId,
+      },
       include: [{
         model: this.processTokenModel,
         as: 'processTokens',
-        where: {
-          correlationId: correlationId,
-        },
         required: true,
       }],
       order: [
@@ -244,12 +239,12 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
   public async queryByProcessModel(processModelId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
 
     const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
+      where: {
+        processModelId: processModelId,
+      },
       include: [{
         model: this.processTokenModel,
         as: 'processTokens',
-        where: {
-          processModelId: processModelId,
-        },
         required: true,
       }],
       order: [
@@ -265,13 +260,13 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
   public async queryByCorrelationAndProcessModel(correlationId: string, processModelId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
 
     const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
+      where: {
+        correlationId: correlationId,
+        processModelId: processModelId,
+      },
       include: [{
         model: this.processTokenModel,
         as: 'processTokens',
-        where: {
-          correlationId: correlationId,
-          processModelId: processModelId,
-        },
         required: true,
       }],
     });
@@ -286,14 +281,12 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
       where: {
+        correlationId: correlationId,
         state: Runtime.Types.FlowNodeInstanceState.suspended,
       },
       include: [{
         model: this.processTokenModel,
         as: 'processTokens',
-        where: {
-          correlationId: correlationId,
-        },
         required: true,
       }],
       order: [
@@ -310,14 +303,12 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
       where: {
+        processModelId: processModelId,
         state: Runtime.Types.FlowNodeInstanceState.suspended,
       },
       include: [{
         model: this.processTokenModel,
         as: 'processTokens',
-        where: {
-          processModelId: processModelId,
-        },
         required: true,
       }],
       order: [
@@ -332,21 +323,38 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
   public async queryProcessTokensByProcessInstanceId(processInstanceId: string): Promise<Array<Runtime.Types.ProcessToken>> {
 
-    const processInstanceTokens: Array<ProcessToken> = await this.processTokenModel.findAll({
+    const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
       where: {
         processInstanceId: processInstanceId,
       },
+      include: [{
+        model: this.processTokenModel,
+        as: 'processTokens',
+        required: true,
+      }],
       order: [
         [ 'createdAt', 'DESC' ],
       ],
     });
 
-    const flowNodeInstances: Array<Runtime.Types.ProcessToken> = processInstanceTokens.map(this._convertProcessTokenToRuntimeObject.bind(this));
+    const processTokens: Array<Runtime.Types.ProcessToken> = [];
 
-    return flowNodeInstances;
+    results.forEach((flowNodeInstance: FlowNodeInstanceModel) => {
+      const instanceProcessTokens: Array<ProcessToken> = flowNodeInstance.processTokens;
+
+      instanceProcessTokens.forEach((token: ProcessToken) => {
+        const runtimeProcessToken: Runtime.Types.ProcessToken =
+          this._convertProcessTokenToRuntimeObject(token, flowNodeInstance);
+
+        processTokens.push(runtimeProcessToken);
+      });
+    });
+
+    return processTokens;
   }
 
   public async deleteByProcessModelId(processModelId: string): Promise<void> {
+
     const flowNodeInstancesToRemove: Array<Runtime.Types.FlowNodeInstance> = await this.queryByProcessModel(processModelId);
     const flowNodeInstanceIdsToRemove: Array<string> = flowNodeInstancesToRemove.map(((flowNodeInstance: Runtime.Types.FlowNodeInstance): string => {
       return flowNodeInstance.id;
@@ -354,13 +362,17 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const flowNodeQueryParams: Sequelize.DestroyOptions = {
       where: {
-        flowNodeInstanceId: flowNodeInstanceIdsToRemove,
+        flowNodeInstanceId: {
+          $in: flowNodeInstanceIdsToRemove,
+        },
       },
     };
 
     const processTokenQueryParams: Sequelize.DestroyOptions = {
       where: {
-        processModelId: processModelId,
+        flowNodeInstanceId: {
+          $in: flowNodeInstanceIdsToRemove,
+        },
       },
     };
 
@@ -373,11 +385,16 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
                               processToken: Runtime.Types.ProcessToken,
                               previousFlowNodeInstanceId: string): Promise<Runtime.Types.FlowNodeInstance> {
 
-    const createParams: any = {
+    const createParams: IFlowNodeInstanceAttributes = {
+      flowNodeInstanceId: flowNodeInstanceId,
       flowNodeId: flowNode.id,
       flowNodeType: flowNode.bpmnType,
       eventType: (flowNode as any).eventType,
-      flowNodeInstanceId: flowNodeInstanceId,
+      correlationId: processToken.correlationId,
+      processModelId: processToken.processModelId,
+      processInstanceId: processToken.processInstanceId,
+      identity: JSON.stringify(processToken.identity),
+      parentProcessInstanceId: processToken.caller,
       state: Runtime.Types.FlowNodeInstanceState.running,
       previousFlowNodeInstanceId: previousFlowNodeInstanceId,
     };
@@ -476,11 +493,12 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
                                                        token: Runtime.Types.ProcessToken,
                                                        type: Runtime.Types.ProcessTokenType): Promise<void> {
 
-    const createParams: any = clone(token);
-    createParams.identity = JSON.stringify(createParams.identity);
-    createParams.payload = JSON.stringify(createParams.payload);
-    createParams.type = type;
-    createParams.flowNodeInstanceId = flowNodeInstanceId;
+    const createParams: IProcessTokenAttributes = {
+      createdAt: token.createdAt,
+      type: type,
+      payload: JSON.stringify(token.payload),
+      flowNodeInstanceId: token.flowNodeInstanceId,
+    };
 
     await this.processTokenModel.create(createParams);
   }
@@ -489,35 +507,38 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const runtimeFlowNodeInstance: Runtime.Types.FlowNodeInstance = new Runtime.Types.FlowNodeInstance();
     runtimeFlowNodeInstance.id = dataModel.flowNodeInstanceId;
+    runtimeFlowNodeInstance.flowNodeId = dataModel.flowNodeId;
     runtimeFlowNodeInstance.flowNodeType = <BpmnType> dataModel.flowNodeType;
     runtimeFlowNodeInstance.eventType = <EventType> dataModel.eventType;
-    runtimeFlowNodeInstance.flowNodeId = dataModel.flowNodeId;
-    runtimeFlowNodeInstance.processInstanceId = dataModel.processTokens[0].processInstanceId;
-    runtimeFlowNodeInstance.processModelId = dataModel.processTokens[0].processModelId;
-    runtimeFlowNodeInstance.correlationId = dataModel.processTokens[0].correlationId;
+    runtimeFlowNodeInstance.correlationId = dataModel.correlationId;
+    runtimeFlowNodeInstance.processModelId = dataModel.processModelId;
+    runtimeFlowNodeInstance.processInstanceId = dataModel.processInstanceId;
     runtimeFlowNodeInstance.state = dataModel.state;
     runtimeFlowNodeInstance.error = dataModel.error;
     runtimeFlowNodeInstance.previousFlowNodeInstanceId = dataModel.previousFlowNodeInstanceId;
 
-    const processTokens: Array<Runtime.Types.ProcessToken> = dataModel.processTokens.map(this._convertProcessTokenToRuntimeObject);
+    const processTokens: Array<Runtime.Types.ProcessToken> = dataModel.processTokens.map((currentToken: ProcessToken) => {
+      return this._convertProcessTokenToRuntimeObject(currentToken, dataModel);
+    });
 
     runtimeFlowNodeInstance.tokens = processTokens;
 
     return runtimeFlowNodeInstance;
   }
 
-  private _convertProcessTokenToRuntimeObject(dataModel: ProcessToken): Runtime.Types.ProcessToken {
+  private _convertProcessTokenToRuntimeObject(dataModel: ProcessToken, flowNodeInstance: FlowNodeInstanceModel): Runtime.Types.ProcessToken {
 
     const processToken: Runtime.Types.ProcessToken = new Runtime.Types.ProcessToken();
-    processToken.processInstanceId = dataModel.processInstanceId;
-    processToken.processModelId = dataModel.processModelId;
-    processToken.correlationId = dataModel.correlationId;
     processToken.flowNodeInstanceId = dataModel.flowNodeInstanceId;
-    processToken.identity = dataModel.identity ? JSON.parse(dataModel.identity) : undefined;
     processToken.createdAt = dataModel.createdAt;
-    processToken.caller = dataModel.caller;
     processToken.type = Runtime.Types.ProcessTokenType[dataModel.type];
     processToken.payload = dataModel.payload ? JSON.parse(dataModel.payload) : {};
+
+    processToken.processInstanceId = flowNodeInstance.processInstanceId;
+    processToken.processModelId = flowNodeInstance.processModelId;
+    processToken.correlationId = flowNodeInstance.correlationId;
+    processToken.identity = flowNodeInstance.identity ? JSON.parse(flowNodeInstance.identity) : {};
+    processToken.caller = flowNodeInstance.parentProcessInstanceId;
 
     return processToken;
   }
