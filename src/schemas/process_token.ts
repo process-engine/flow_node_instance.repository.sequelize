@@ -2,12 +2,7 @@ import * as moment from 'moment';
 import * as Sequelize from 'sequelize';
 
 export interface IProcessTokenAttributes {
-  processInstanceId: string;
-  processModelId: string;
-  correlationId: string;
-  identity: string;
   createdAt: Date;
-  caller?: string; // Only set, if the process token belongs to a subprocess
   type: string;
   payload: string;
   flowNodeInstanceId: string;
@@ -17,32 +12,10 @@ export type ProcessToken = Sequelize.Instance<IProcessTokenAttributes> & IProces
 
 export function defineProcessToken(sequelize: Sequelize.Sequelize): Sequelize.Model<ProcessToken, IProcessTokenAttributes> {
   const attributes: SequelizeAttributes<IProcessTokenAttributes> = {
-    processInstanceId: {
-      type: Sequelize.STRING,
-      allowNull: false,
-    },
-    processModelId: {
-      type: Sequelize.STRING,
-      allowNull: false,
-    },
-    correlationId: {
-      type: Sequelize.STRING,
-      allowNull: false,
-    },
-    identity: {
-      // Note: Sequelize.STRING equals varchar(255).
-      // Depending on the type of token used, this can easily exceed 255 chars.
-      type: Sequelize.TEXT,
-      allowNull: false,
-    },
     createdAt: {
       type: Sequelize.DATE,
       allowNull: true,
       defaultValue: moment.utc().toDate(),
-    },
-    caller: {
-      type: Sequelize.STRING,
-      allowNull: true,
     },
     type: {
       type: Sequelize.STRING,
