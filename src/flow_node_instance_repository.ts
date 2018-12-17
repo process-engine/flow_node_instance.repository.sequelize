@@ -95,6 +95,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       include: [{
         model: this.processTokenModel,
         as: 'processTokens',
+        required: true,
       }],
       order: [
         [ 'createdAt', 'DESC' ],
@@ -138,6 +139,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       include: [{
         model: this.processTokenModel,
         as: 'processTokens',
+        required: true,
       }],
     });
 
@@ -150,6 +152,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
       where: {
+        processInstanceId: processInstanceId,
         state: {
           $in: [Runtime.Types.FlowNodeInstanceState.suspended, Runtime.Types.FlowNodeInstanceState.running],
         },
@@ -157,9 +160,6 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       include: [{
         model: this.processTokenModel,
         as: 'processTokens',
-        where: {
-          processInstanceId: processInstanceId,
-        },
         required: true,
       }],
     });
@@ -174,6 +174,8 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
       where: {
+        correlationId: correlationId,
+        processModelId: processModelId,
         state: {
           $in: [Runtime.Types.FlowNodeInstanceState.suspended, Runtime.Types.FlowNodeInstanceState.running],
         },
@@ -181,10 +183,6 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       include: [{
         model: this.processTokenModel,
         as: 'processTokens',
-        where: {
-          correlationId: correlationId,
-          processModelId: processModelId,
-        },
         required: true,
       }],
     });
