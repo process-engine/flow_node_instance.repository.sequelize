@@ -512,7 +512,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     runtimeFlowNodeInstance.processInstanceId = dataModel.processInstanceId;
     runtimeFlowNodeInstance.state = dataModel.state;
     runtimeFlowNodeInstance.error = dataModel.error;
-    runtimeFlowNodeInstance.identity = dataModel.identity ? JSON.parse(dataModel.identity) : {};
+    runtimeFlowNodeInstance.owner = dataModel.identity ? JSON.parse(dataModel.identity) : {};
     runtimeFlowNodeInstance.parentProcessInstanceId = dataModel.parentProcessInstanceId;
     runtimeFlowNodeInstance.previousFlowNodeInstanceId = dataModel.previousFlowNodeInstanceId;
 
