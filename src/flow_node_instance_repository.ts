@@ -1,5 +1,4 @@
 // tslint:disable:max-file-line-count
-import * as clone from 'clone';
 import {Logger} from 'loggerhythm';
 import * as Sequelize from 'sequelize';
 
@@ -513,6 +512,8 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     runtimeFlowNodeInstance.processInstanceId = dataModel.processInstanceId;
     runtimeFlowNodeInstance.state = dataModel.state;
     runtimeFlowNodeInstance.error = dataModel.error;
+    runtimeFlowNodeInstance.owner = dataModel.identity ? JSON.parse(dataModel.identity) : {};
+    runtimeFlowNodeInstance.parentProcessInstanceId = dataModel.parentProcessInstanceId;
     runtimeFlowNodeInstance.previousFlowNodeInstanceId = dataModel.previousFlowNodeInstanceId;
 
     const processTokens: Array<Runtime.Types.ProcessToken> = dataModel.processTokens.map((currentToken: ProcessToken) => {
