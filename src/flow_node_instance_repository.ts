@@ -378,24 +378,28 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       return flowNodeInstance.id;
     }));
 
-    const flowNodeQueryParams: Sequelize.DestroyOptions = {
-      where: {
-        flowNodeInstanceId: {
-          $in: flowNodeInstanceIdsToRemove,
+    await this._sequelize.transaction(async(deleteTransaction: Sequelize.Transaction): Promise<void> => {
+      const flowNodeQueryParams: Sequelize.DestroyOptions = {
+        where: {
+          flowNodeInstanceId: {
+            $in: flowNodeInstanceIdsToRemove,
+          },
         },
-      },
-    };
+        transaction: deleteTransaction,
+      };
 
-    const processTokenQueryParams: Sequelize.DestroyOptions = {
-      where: {
-        flowNodeInstanceId: {
-          $in: flowNodeInstanceIdsToRemove,
+      const processTokenQueryParams: Sequelize.DestroyOptions = {
+        where: {
+          flowNodeInstanceId: {
+            $in: flowNodeInstanceIdsToRemove,
+          },
         },
-      },
-    };
+        transaction: deleteTransaction,
+      };
 
-    await this.processTokenModel.destroy(processTokenQueryParams);
-    await this.flowNodeInstanceModel.destroy(flowNodeQueryParams);
+      await this.processTokenModel.destroy(processTokenQueryParams);
+      await this.flowNodeInstanceModel.destroy(flowNodeQueryParams);
+    });
   }
 
   public async persistOnEnter(flowNode: Model.Base.FlowNode,
