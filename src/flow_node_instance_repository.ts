@@ -524,7 +524,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
       return updatedFlowNodeInstance;
     } catch (error) {
-      logger.error(`Failed to change state of FlowNodeInstance with ID ${flowNodeInstanceId}!`, error);
+      logger.error(`Failed to change state of FlowNode ${flowNodeId} with instance ID ${flowNodeInstanceId}!`, error);
       throw error;
     }
   }
