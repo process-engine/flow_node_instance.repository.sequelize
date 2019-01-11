@@ -421,12 +421,19 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       previousFlowNodeInstanceId: previousFlowNodeInstanceId,
     };
 
-    await this._sequelize.transaction(async(createTransaction: Sequelize.Transaction): Promise<void> => {
-      await this.flowNodeInstanceModel.create(createParams, {transaction: createTransaction});
-      await this._createProcessTokenForFlowNodeInstance(flowNodeInstanceId, processToken, Runtime.Types.ProcessTokenType.onEnter, createTransaction);
-    });
+    try {
+      await this._sequelize.transaction(async(createTransaction: Sequelize.Transaction): Promise<void> => {
+        const initialState: Runtime.Types.ProcessTokenType = Runtime.Types.ProcessTokenType.onEnter;
 
-    return this.queryByInstanceId(flowNodeInstanceId);
+        await this.flowNodeInstanceModel.create(createParams, {transaction: createTransaction});
+        await this._createProcessTokenForFlowNodeInstance(flowNodeInstanceId, processToken, initialState, createTransaction);
+      });
+
+      return this.queryByInstanceId(flowNodeInstanceId);
+    } catch (error) {
+      logger.error(`Failed to persist new instance for FlowNode ${flowNode.id}, using instance id ${flowNodeInstanceId}!`, error);
+      throw error;
+    }
   }
 
   public async persistOnExit(flowNode: Model.Base.FlowNode,
@@ -506,16 +513,20 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       matchingFlowNodeInstance.error = error.toString();
     }
 
-    return this._sequelize.transaction(async(createTransaction: Sequelize.Transaction): Promise<Runtime.Types.FlowNodeInstance> => {
+    try {
+      await this._sequelize.transaction(async(createTransaction: Sequelize.Transaction): Promise<void> => {
+        await matchingFlowNodeInstance.save({transaction: createTransaction});
 
-      await matchingFlowNodeInstance.save({transaction: createTransaction});
-
-      await this._createProcessTokenForFlowNodeInstance(flowNodeInstanceId, token, processTokenType, createTransaction);
+        await this._createProcessTokenForFlowNodeInstance(flowNodeInstanceId, token, processTokenType, createTransaction);
+      });
 
       const updatedFlowNodeInstance: Runtime.Types.FlowNodeInstance = await this.queryByInstanceId(flowNodeInstanceId);
 
       return updatedFlowNodeInstance;
-    });
+    } catch (error) {
+      logger.error(`Failed to change state of FlowNodeInstance with ID ${flowNodeInstanceId}!`, error);
+      throw error;
+    }
   }
 
   private async _createProcessTokenForFlowNodeInstance(flowNodeInstanceId: string,
