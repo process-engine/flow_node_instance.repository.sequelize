@@ -350,6 +350,27 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     return processTokens;
   }
 
+  public async queryByProcessInstanceId(processInstanceId: string): Promise<Array<Runtime.Types.FlowNodeInstance>> {
+
+    const results: Array<FlowNodeInstanceModel> = await this.flowNodeInstanceModel.findAll({
+      where: {
+        processInstanceId: processInstanceId,
+      },
+      include: [{
+        model: this.processTokenModel,
+        as: 'processTokens',
+        required: true,
+      }],
+      order: [
+        [ 'id', 'ASC' ],
+      ],
+    });
+
+    const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
+
+    return flowNodeInstances;
+  }
+
   public async deleteByProcessModelId(processModelId: string): Promise<void> {
 
     const flowNodeInstancesToRemove: Array<Runtime.Types.FlowNodeInstance> = await this.queryByProcessModel(processModelId);
