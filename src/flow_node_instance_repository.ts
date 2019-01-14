@@ -431,8 +431,10 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
       return this.queryByInstanceId(flowNodeInstanceId);
     } catch (error) {
-      await createTransaction.rollback();
       logger.error(`Failed to persist new instance for FlowNode ${flowNode.id}, using instance id ${flowNodeInstanceId}!`, error);
+
+      await createTransaction.rollback();
+
       throw error;
     }
   }
@@ -528,7 +530,9 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
         `Failed to change state of FlowNode ${flowNodeId} with instance ID ${flowNodeInstanceId} to '${newState}'!`,
         token, error,
       );
+
       await createTransaction.rollback();
+
       throw error;
     }
   }
