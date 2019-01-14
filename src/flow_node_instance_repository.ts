@@ -421,16 +421,17 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       previousFlowNodeInstanceId: previousFlowNodeInstanceId,
     };
 
-    try {
-      await this._sequelize.transaction(async(createTransaction: Sequelize.Transaction): Promise<void> => {
-        const initialState: Runtime.Types.ProcessTokenType = Runtime.Types.ProcessTokenType.onEnter;
+    const initialState: Runtime.Types.ProcessTokenType = Runtime.Types.ProcessTokenType.onEnter;
 
-        await this.flowNodeInstanceModel.create(createParams, {transaction: createTransaction});
-        await this._createProcessTokenForFlowNodeInstance(flowNodeInstanceId, processToken, initialState, createTransaction);
-      });
+    const createTransaction: Sequelize.Transaction = await this._sequelize.transaction();
+    try {
+      await this.flowNodeInstanceModel.create(createParams, {transaction: createTransaction});
+      await this._createProcessTokenForFlowNodeInstance(flowNodeInstanceId, processToken, initialState, createTransaction);
+      await createTransaction.commit();
 
       return this.queryByInstanceId(flowNodeInstanceId);
     } catch (error) {
+      await createTransaction.rollback();
       logger.error(`Failed to persist new instance for FlowNode ${flowNode.id}, using instance id ${flowNodeInstanceId}!`, error);
       throw error;
     }
@@ -513,12 +514,11 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       matchingFlowNodeInstance.error = error.toString();
     }
 
+    const createTransaction: Sequelize.Transaction = await this._sequelize.transaction();
     try {
-      await this._sequelize.transaction(async(createTransaction: Sequelize.Transaction): Promise<void> => {
-        await matchingFlowNodeInstance.save({transaction: createTransaction});
-
-        await this._createProcessTokenForFlowNodeInstance(flowNodeInstanceId, token, processTokenType, createTransaction);
-      });
+      await matchingFlowNodeInstance.save({transaction: createTransaction});
+      await this._createProcessTokenForFlowNodeInstance(flowNodeInstanceId, token, processTokenType, createTransaction);
+      await createTransaction.commit();
 
       const updatedFlowNodeInstance: Runtime.Types.FlowNodeInstance = await this.queryByInstanceId(flowNodeInstanceId);
 
@@ -526,8 +526,9 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     } catch (error) {
       logger.error(
         `Failed to change state of FlowNode ${flowNodeId} with instance ID ${flowNodeInstanceId} to '${newState}'!`,
-        matchingFlowNodeInstance, error,
+        token, error,
       );
+      await createTransaction.rollback();
       throw error;
     }
   }
