@@ -3,7 +3,7 @@
   "publishConfig": {
     "registry": "https://www.npmjs.com"
   },
-  "version": "8.1.0",
+  "version": "8.2.0",
   "description": "Uses sequelize to access and manipulate flow node instance data.",
   "license": "MIT",
   "main": "dist/commonjs/index.js",
