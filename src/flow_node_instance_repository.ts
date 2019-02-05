@@ -186,7 +186,6 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       }],
     });
 
-    // TODO - BUG: For some reason the "this" context gets lost here, unless a bind is made.
     const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
 
     return flowNodeInstances;
@@ -268,7 +267,6 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       }],
     });
 
-    // TODO - BUG: For some reason the "this" context gets lost here, unless a bind is made.
     const flowNodeInstances: Array<Runtime.Types.FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
 
     return flowNodeInstances;
@@ -565,10 +563,9 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
                                                        createTransaction: Sequelize.Transaction): Promise<void> {
 
     const createParams: IProcessTokenAttributes = {
-      createdAt: token.createdAt,
       type: type,
       payload: JSON.stringify(token.payload),
-      flowNodeInstanceId: token.flowNodeInstanceId,
+      flowNodeInstanceId: flowNodeInstanceId,
     };
 
     await this.processTokenModel.create(createParams, {transaction: createTransaction});
