@@ -10,9 +10,9 @@ export interface IProcessTokenAttributes {
   createdAt?: Date;
 }
 
-export type ProcessToken = Sequelize.Instance<IProcessTokenAttributes> & IProcessTokenAttributes;
+export type ProcessTokenModel = Sequelize.Instance<IProcessTokenAttributes> & IProcessTokenAttributes;
 
-export function defineProcessToken(sequelize: Sequelize.Sequelize): Sequelize.Model<ProcessToken, IProcessTokenAttributes> {
+export function defineProcessToken(sequelize: Sequelize.Sequelize): Sequelize.Model<ProcessTokenModel, IProcessTokenAttributes> {
   const attributes: SequelizeAttributes<IProcessTokenAttributes> = {
     type: {
       type: Sequelize.STRING,
@@ -30,5 +30,5 @@ export function defineProcessToken(sequelize: Sequelize.Sequelize): Sequelize.Mo
   };
 
   // TODO: Rename to `ProcessToken`, once the old datamodel with the same name is removed.
-  return sequelize.define<ProcessToken, IProcessTokenAttributes>('ProcessToken', attributes);
+  return sequelize.define<ProcessTokenModel, IProcessTokenAttributes>('ProcessToken', attributes);
 }
