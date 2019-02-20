@@ -1,7 +1,7 @@
 import * as Sequelize from 'sequelize';
-import {ProcessToken} from './process_token';
+import {ProcessTokenModel} from './process_token';
 
-import {Runtime} from '@process-engine/process_engine_contracts';
+import {FlowNodeInstanceState} from '@process-engine/flow_node_instance.contracts';
 
 export interface IFlowNodeInstanceAttributes {
   flowNodeInstanceId: string;
@@ -13,19 +13,19 @@ export interface IFlowNodeInstanceAttributes {
   processInstanceId: string;
   identity: string;
   parentProcessInstanceId?: string;
-  state: Runtime.Types.FlowNodeInstanceState;
+  state: FlowNodeInstanceState;
   error?: string;
   // Contains the association to the ProcessToken model.
   // Must be optional, otherwise this property will be expected in the attribute payload of `sequelize.define`.
-  processTokens?: Array<ProcessToken>;
+  processTokens?: Array<ProcessTokenModel>;
   // The ID of the FlowNodeInstance that was executed before.
   // Will only be undefined for StartEvents.
   previousFlowNodeInstanceId?: string;
 }
 
-export type FlowNodeInstance = Sequelize.Instance<IFlowNodeInstanceAttributes> & IFlowNodeInstanceAttributes;
+export type FlowNodeInstanceModel = Sequelize.Instance<IFlowNodeInstanceAttributes> & IFlowNodeInstanceAttributes;
 
-export function defineFlowNodeInstance(sequelize: Sequelize.Sequelize): Sequelize.Model<FlowNodeInstance, IFlowNodeInstanceAttributes> {
+export function defineFlowNodeInstance(sequelize: Sequelize.Sequelize): Sequelize.Model<FlowNodeInstanceModel, IFlowNodeInstanceAttributes> {
 
   const attributes: SequelizeAttributes<IFlowNodeInstanceAttributes> = {
     flowNodeInstanceId: {
@@ -82,5 +82,5 @@ export function defineFlowNodeInstance(sequelize: Sequelize.Sequelize): Sequeliz
     },
   };
 
-  return sequelize.define<FlowNodeInstance, IFlowNodeInstanceAttributes>('FlowNodeInstance', attributes);
+  return sequelize.define<FlowNodeInstanceModel, IFlowNodeInstanceAttributes>('FlowNodeInstance', attributes);
 }
