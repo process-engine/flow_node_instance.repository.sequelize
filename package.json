@@ -3,7 +3,7 @@
   "publishConfig": {
     "registry": "https://www.npmjs.com"
   },
-  "version": "9.0.0",
+  "version": "9.0.1",
   "description": "Uses sequelize to access and manipulate flow node instance data.",
   "license": "MIT",
   "main": "dist/commonjs/index.js",
@@ -27,7 +27,7 @@
     "@types/sequelize": "^4.27.32",
     "gulp": "^4.0.0",
     "gulptraum": "^3.0.0",
-    "gulptraum-typescript": "^2.0.0",
+    "gulptraum-typescript": "^3.0.0",
     "moment": "^2.22.2",
     "tsconfig": "^7.0.0",
     "tslint": "^5.11.0",
