@@ -82,6 +82,29 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     return flowNodeInstance;
   }
 
+  public async querySpecificFlowNodeByProcessInstanceId(processInstanceId: string, flowNodeId: string): Promise<FlowNodeInstance> {
+    const result: FlowNodeInstanceModel = await this._flowNodeInstanceModel.findOne({
+      where: {
+        processInstanceId: processInstanceId,
+        flowNodeId: flowNodeId,
+      },
+      include: [{
+        model: this._processTokenModel,
+        as: 'processTokens',
+        required: true,
+      }],
+    });
+
+    const flowNodeInstanceNotFound: boolean = result === null || result === undefined;
+    if (flowNodeInstanceNotFound) {
+      throw new NotFoundError(`FlowNodeInstance with flowNodeId "${flowNodeId}" does not exist on this instance.`);
+    }
+
+    const flowNodeInstance: FlowNodeInstance = this._convertFlowNodeInstanceToRuntimeObject(result);
+
+    return flowNodeInstance;
+  }
+
   public async queryByFlowNodeId(flowNodeId: string): Promise<Array<FlowNodeInstance>> {
     const results: Array<FlowNodeInstanceModel> = await FlowNodeInstanceModel.findAll({
       where: {
