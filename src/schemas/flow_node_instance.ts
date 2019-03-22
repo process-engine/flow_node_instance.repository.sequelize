@@ -58,6 +58,10 @@ export class FlowNodeInstanceModel extends Model<FlowNodeInstanceModel> {
   @Column(DataType.STRING)
   public previousFlowNodeInstanceId: string;
 
+  @AllowNull(true)
+  @Column(DataType.STRING)
+  public interruptedBy: string;
+
   @HasMany((): typeof ProcessTokenModel => ProcessTokenModel, {
     as: 'processTokens',
     foreignKey: 'flowNodeInstanceId',
