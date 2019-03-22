@@ -529,6 +529,19 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     return this.persistOnStateChange(flowNode.id, flowNodeInstanceId, processToken, flowNodeInstanceState, processTokenType);
   }
 
+  public async persistOnInterrupt(
+    flowNode: FlowNode,
+    flowNodeInstanceId: string,
+    processToken: ProcessToken,
+    interruptorInstanceId: string,
+  ): Promise<FlowNodeInstance> {
+
+    const flowNodeInstanceState = FlowNodeInstanceState.interrupted;
+    const processTokenType = ProcessTokenType.onExit;
+
+    return this.persistOnStateChange(flowNode.id, flowNodeInstanceId, processToken, flowNodeInstanceState, processTokenType);
+  }
+
   public async suspend(
     flowNodeId: string,
     flowNodeInstanceId: string,
