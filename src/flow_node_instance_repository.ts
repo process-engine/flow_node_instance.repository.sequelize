@@ -539,7 +539,15 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     const flowNodeInstanceState = FlowNodeInstanceState.interrupted;
     const processTokenType = ProcessTokenType.onExit;
 
-    return this.persistOnStateChange(flowNode.id, flowNodeInstanceId, processToken, flowNodeInstanceState, processTokenType);
+    return this.persistOnStateChange(
+      flowNode.id,
+      flowNodeInstanceId,
+      processToken,
+      flowNodeInstanceState,
+      processTokenType,
+      undefined,
+      interruptorInstanceId,
+    );
   }
 
   public async suspend(
@@ -573,6 +581,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     newState: FlowNodeInstanceState,
     processTokenType: ProcessTokenType,
     error?: Error,
+    interruptorInstanceId?: string,
   ): Promise<FlowNodeInstance> {
 
     const matchingFlowNodeInstance = await FlowNodeInstanceModel.findOne({
@@ -592,6 +601,11 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     const stateChangeHasErrorAttached = error !== undefined;
     if (stateChangeHasErrorAttached) {
       matchingFlowNodeInstance.error = this.serializeError(error);
+    }
+
+    const flowNodeIsInterrupted = newState === FlowNodeInstanceState.interrupted;
+    if (flowNodeIsInterrupted) {
+      matchingFlowNodeInstance.interruptedBy = interruptorInstanceId;
     }
 
     const createTransaction = await this.sequelizeInstance.transaction();
