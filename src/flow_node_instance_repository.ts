@@ -1,4 +1,3 @@
-// tslint:disable:max-file-line-count
 import {Logger} from 'loggerhythm';
 import * as Sequelize from 'sequelize';
 
