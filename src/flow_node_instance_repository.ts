@@ -583,10 +583,21 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     runtimeFlowNodeInstance.processModelId = dataModel.processModelId;
     runtimeFlowNodeInstance.processInstanceId = dataModel.processInstanceId;
     runtimeFlowNodeInstance.state = dataModel.state;
-    runtimeFlowNodeInstance.error = dataModel.error;
-    runtimeFlowNodeInstance.owner = dataModel.identity ? JSON.parse(dataModel.identity) : {};
+    runtimeFlowNodeInstance.owner = dataModel.identity ? this._tryParse(dataModel.identity) : {};
     runtimeFlowNodeInstance.parentProcessInstanceId = dataModel.parentProcessInstanceId;
     runtimeFlowNodeInstance.previousFlowNodeInstanceId = dataModel.previousFlowNodeInstanceId;
+
+    const dataModelHasError: boolean = dataModel.error !== undefined;
+    if (dataModelHasError) {
+
+      const essentialProjectsError: Error = this._tryDeserializeEssentialProjectsError(dataModel.error);
+
+      const errorIsFromEssentialProjects: boolean = essentialProjectsError !== undefined;
+
+      runtimeFlowNodeInstance.error = errorIsFromEssentialProjects
+        ? essentialProjectsError
+        : this._tryParse(dataModel.error);
+    }
 
     const processTokens: Array<ProcessToken> = dataModel.processTokens.map((currentToken: ProcessTokenModel) => {
       return this._convertProcessTokenToRuntimeObject(currentToken, dataModel);
@@ -603,14 +614,31 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     processToken.flowNodeInstanceId = dataModel.flowNodeInstanceId;
     processToken.createdAt = dataModel.createdAt;
     processToken.type = ProcessTokenType[dataModel.type];
-    processToken.payload = dataModel.payload ? JSON.parse(dataModel.payload) : {};
+    processToken.payload = dataModel.payload ? this._tryParse(dataModel.payload) : {};
 
     processToken.processInstanceId = flowNodeInstance.processInstanceId;
     processToken.processModelId = flowNodeInstance.processModelId;
     processToken.correlationId = flowNodeInstance.correlationId;
-    processToken.identity = flowNodeInstance.identity ? JSON.parse(flowNodeInstance.identity) : {};
+    processToken.identity = flowNodeInstance.identity ? this._tryParse(flowNodeInstance.identity) : {};
     processToken.caller = flowNodeInstance.parentProcessInstanceId;
 
     return processToken;
+  }
+
+  private _tryParse(value: string): any {
+    try {
+      return JSON.parse(value);
+    } catch (error) {
+      // Value is not a JSON - return it as it is.
+      return value;
+    }
+  }
+
+  private _tryDeserializeEssentialProjectsError(value: string): Error {
+    try {
+      return BaseError.deserialize(value);
+    } catch (error) {
+      return undefined;
+    }
   }
 }
