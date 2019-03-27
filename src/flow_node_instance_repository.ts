@@ -511,12 +511,14 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     return this._persistOnStateChange(flowNodeId, flowNodeInstanceId, processToken, flowNodeInstanceState, processTokenType);
   }
 
-  private async _persistOnStateChange(flowNodeId: string,
-                                      flowNodeInstanceId: string,
-                                      token: ProcessToken,
-                                      newState: FlowNodeInstanceState,
-                                      processTokenType: ProcessTokenType,
-                                      error?: Error): Promise<FlowNodeInstance> {
+  private async _persistOnStateChange(
+    flowNodeId: string,
+    flowNodeInstanceId: string,
+    token: ProcessToken,
+    newState: FlowNodeInstanceState,
+    processTokenType: ProcessTokenType,
+    error?: Error,
+  ): Promise<FlowNodeInstance> {
 
     const matchingFlowNodeInstance: FlowNodeInstanceModel = await this._flowNodeInstanceModel.findOne({
       where: {
@@ -558,10 +560,12 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     }
   }
 
-  private async _createProcessTokenForFlowNodeInstance(flowNodeInstanceId: string,
-                                                       token: ProcessToken,
-                                                       type: ProcessTokenType,
-                                                       createTransaction: Sequelize.Transaction): Promise<void> {
+  private async _createProcessTokenForFlowNodeInstance(
+    flowNodeInstanceId: string,
+    token: ProcessToken,
+    type: ProcessTokenType,
+    createTransaction: Sequelize.Transaction,
+  ): Promise<void> {
 
     const createParams: IProcessTokenAttributes = {
       type: type,
