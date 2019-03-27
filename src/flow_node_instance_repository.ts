@@ -3,7 +3,7 @@ import {Logger} from 'loggerhythm';
 import * as Sequelize from 'sequelize';
 
 import {IDisposable} from '@essential-projects/bootstrapper_contracts';
-import {NotFoundError} from '@essential-projects/errors_ts';
+import {BaseError, isEssentialProjectsError, NotFoundError} from '@essential-projects/errors_ts';
 import {SequelizeConnectionManager} from '@essential-projects/sequelize_connection_manager';
 import {
   BpmnType,
@@ -534,7 +534,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const stateChangeHasErrorAttached: boolean = error !== undefined;
     if (stateChangeHasErrorAttached) {
-      matchingFlowNodeInstance.error = error.toString();
+      matchingFlowNodeInstance.error = this._serializeError(error);
     }
 
     const createTransaction: Sequelize.Transaction = await this._sequelize.transaction();
@@ -570,6 +570,21 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     };
 
     await this._processTokenModel.create(createParams, {transaction: createTransaction});
+  }
+
+  private _serializeError(error: any): string {
+
+    const errorIsFromEssentialProjects: boolean = isEssentialProjectsError(error);
+    if (errorIsFromEssentialProjects) {
+      return (error as BaseError).serialize();
+    }
+
+    const errorIsString: boolean = typeof error === 'string';
+    if (errorIsString) {
+      return error;
+    }
+
+    return JSON.stringify(error);
   }
 
   private _convertFlowNodeInstanceToRuntimeObject(dataModel: FlowNodeInstanceModel): FlowNodeInstance {
