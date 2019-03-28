@@ -1,9 +1,8 @@
-// tslint:disable:max-file-line-count
 import {Logger} from 'loggerhythm';
 import * as Sequelize from 'sequelize';
 
 import {IDisposable} from '@essential-projects/bootstrapper_contracts';
-import {NotFoundError} from '@essential-projects/errors_ts';
+import {BaseError, isEssentialProjectsError, NotFoundError} from '@essential-projects/errors_ts';
 import {SequelizeConnectionManager} from '@essential-projects/sequelize_connection_manager';
 import {
   BpmnType,
@@ -511,12 +510,14 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     return this._persistOnStateChange(flowNodeId, flowNodeInstanceId, processToken, flowNodeInstanceState, processTokenType);
   }
 
-  private async _persistOnStateChange(flowNodeId: string,
-                                      flowNodeInstanceId: string,
-                                      token: ProcessToken,
-                                      newState: FlowNodeInstanceState,
-                                      processTokenType: ProcessTokenType,
-                                      error?: Error): Promise<FlowNodeInstance> {
+  private async _persistOnStateChange(
+    flowNodeId: string,
+    flowNodeInstanceId: string,
+    token: ProcessToken,
+    newState: FlowNodeInstanceState,
+    processTokenType: ProcessTokenType,
+    error?: Error,
+  ): Promise<FlowNodeInstance> {
 
     const matchingFlowNodeInstance: FlowNodeInstanceModel = await this._flowNodeInstanceModel.findOne({
       where: {
@@ -534,7 +535,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const stateChangeHasErrorAttached: boolean = error !== undefined;
     if (stateChangeHasErrorAttached) {
-      matchingFlowNodeInstance.error = error.toString();
+      matchingFlowNodeInstance.error = this._serializeError(error);
     }
 
     const createTransaction: Sequelize.Transaction = await this._sequelize.transaction();
@@ -558,10 +559,12 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     }
   }
 
-  private async _createProcessTokenForFlowNodeInstance(flowNodeInstanceId: string,
-                                                       token: ProcessToken,
-                                                       type: ProcessTokenType,
-                                                       createTransaction: Sequelize.Transaction): Promise<void> {
+  private async _createProcessTokenForFlowNodeInstance(
+    flowNodeInstanceId: string,
+    token: ProcessToken,
+    type: ProcessTokenType,
+    createTransaction: Sequelize.Transaction,
+  ): Promise<void> {
 
     const createParams: IProcessTokenAttributes = {
       type: type,
@@ -570,6 +573,21 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     };
 
     await this._processTokenModel.create(createParams, {transaction: createTransaction});
+  }
+
+  private _serializeError(error: any): string {
+
+    const errorIsFromEssentialProjects: boolean = isEssentialProjectsError(error);
+    if (errorIsFromEssentialProjects) {
+      return (error as BaseError).serialize();
+    }
+
+    const errorIsString: boolean = typeof error === 'string';
+    if (errorIsString) {
+      return error;
+    }
+
+    return JSON.stringify(error);
   }
 
   private _convertFlowNodeInstanceToRuntimeObject(dataModel: FlowNodeInstanceModel): FlowNodeInstance {
@@ -583,10 +601,21 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     runtimeFlowNodeInstance.processModelId = dataModel.processModelId;
     runtimeFlowNodeInstance.processInstanceId = dataModel.processInstanceId;
     runtimeFlowNodeInstance.state = dataModel.state;
-    runtimeFlowNodeInstance.error = dataModel.error;
-    runtimeFlowNodeInstance.owner = dataModel.identity ? JSON.parse(dataModel.identity) : {};
+    runtimeFlowNodeInstance.owner = dataModel.identity ? this._tryParse(dataModel.identity) : {};
     runtimeFlowNodeInstance.parentProcessInstanceId = dataModel.parentProcessInstanceId;
     runtimeFlowNodeInstance.previousFlowNodeInstanceId = dataModel.previousFlowNodeInstanceId;
+
+    const dataModelHasError: boolean = dataModel.error !== undefined;
+    if (dataModelHasError) {
+
+      const essentialProjectsError: Error = this._tryDeserializeEssentialProjectsError(dataModel.error);
+
+      const errorIsFromEssentialProjects: boolean = essentialProjectsError !== undefined;
+
+      runtimeFlowNodeInstance.error = errorIsFromEssentialProjects
+        ? essentialProjectsError
+        : this._tryParse(dataModel.error);
+    }
 
     const processTokens: Array<ProcessToken> = dataModel.processTokens.map((currentToken: ProcessTokenModel) => {
       return this._convertProcessTokenToRuntimeObject(currentToken, dataModel);
@@ -603,14 +632,31 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     processToken.flowNodeInstanceId = dataModel.flowNodeInstanceId;
     processToken.createdAt = dataModel.createdAt;
     processToken.type = ProcessTokenType[dataModel.type];
-    processToken.payload = dataModel.payload ? JSON.parse(dataModel.payload) : {};
+    processToken.payload = dataModel.payload ? this._tryParse(dataModel.payload) : {};
 
     processToken.processInstanceId = flowNodeInstance.processInstanceId;
     processToken.processModelId = flowNodeInstance.processModelId;
     processToken.correlationId = flowNodeInstance.correlationId;
-    processToken.identity = flowNodeInstance.identity ? JSON.parse(flowNodeInstance.identity) : {};
+    processToken.identity = flowNodeInstance.identity ? this._tryParse(flowNodeInstance.identity) : {};
     processToken.caller = flowNodeInstance.parentProcessInstanceId;
 
     return processToken;
+  }
+
+  private _tryParse(value: string): any {
+    try {
+      return JSON.parse(value);
+    } catch (error) {
+      // Value is not a JSON - return it as it is.
+      return value;
+    }
+  }
+
+  private _tryDeserializeEssentialProjectsError(value: string): Error {
+    try {
+      return BaseError.deserialize(value);
+    } catch (error) {
+      return undefined;
+    }
   }
 }
