@@ -62,8 +62,6 @@ export function defineFlowNodeInstance(sequelize: Sequelize.Sequelize): Sequeliz
       allowNull: true,
     },
     identity: {
-      // Since the identity is also a serialised object, we should use TEXT instead of string here.
-      // See ProcessToken.Payload.
       type: Sequelize.TEXT,
       allowNull: true,
     },
@@ -73,7 +71,7 @@ export function defineFlowNodeInstance(sequelize: Sequelize.Sequelize): Sequeliz
       defaultValue: 0,
     },
     error: {
-      type: Sequelize.STRING,
+      type: Sequelize.TEXT,
       allowNull: true,
     },
     previousFlowNodeInstanceId: {
