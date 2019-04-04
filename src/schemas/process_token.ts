@@ -19,7 +19,6 @@ export function defineProcessToken(sequelize: Sequelize.Sequelize): Sequelize.Mo
       allowNull: true,
     },
     payload: {
-      // NOTE: Use Sequelize.TEXT, since payloads can contain all kinds of things and could therefore exceed 255 chars.
       type: Sequelize.TEXT,
       allowNull: true,
     },
