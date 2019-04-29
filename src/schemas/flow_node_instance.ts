@@ -13,31 +13,31 @@ export class FlowNodeInstanceModel extends Model<FlowNodeInstanceModel> {
   public flowNodeInstanceId: string;
 
   @AllowNull(false)
-  @Column
+  @Column(DataType.STRING)
   public flowNodeId: string;
 
   @AllowNull(true)
-  @Column
+  @Column(DataType.STRING)
   public flowNodeType: string;
 
   @AllowNull(true)
-  @Column
+  @Column(DataType.STRING)
   public eventType: string;
 
   @AllowNull(true)
-  @Column
+  @Column(DataType.STRING)
   public correlationId: string;
 
   @AllowNull(true)
-  @Column
+  @Column(DataType.STRING)
   public processModelId: string;
 
   @AllowNull(true)
-  @Column
+  @Column(DataType.STRING)
   public processInstanceId: string;
 
   @AllowNull(true)
-  @Column
+  @Column(DataType.STRING)
   public parentProcessInstanceId: string;
 
   @AllowNull(true)
@@ -53,7 +53,7 @@ export class FlowNodeInstanceModel extends Model<FlowNodeInstanceModel> {
   public error: string;
 
   @AllowNull(true)
-  @Column
+  @Column(DataType.STRING)
   public previousFlowNodeInstanceId: string;
 
   @HasMany(() => ProcessTokenModel)
