@@ -16,10 +16,10 @@ export class ProcessTokenModel extends Model<ProcessTokenModel> {
   public payload: string;
 
   @ForeignKey(() => FlowNodeInstanceModel)
-  @Column
+  @Column({type: DataType.STRING})
   public flowNodeInstanceId: string;
 
-  @BelongsTo(() => FlowNodeInstanceModel)
+  @BelongsTo(() => FlowNodeInstanceModel, 'flowNodeInstanceId')
   public flowNodeInstance: FlowNodeInstanceModel;
 
   @CreatedAt
