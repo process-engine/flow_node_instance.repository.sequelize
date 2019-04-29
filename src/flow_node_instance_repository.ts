@@ -1,5 +1,7 @@
 import {Logger} from 'loggerhythm';
-import * as Sequelize from 'sequelize';
+
+import {DestroyOptions, Transaction} from 'sequelize';
+import {Sequelize, SequelizeOptions} from 'sequelize-typescript';
 
 import {IDisposable} from '@essential-projects/bootstrapper_contracts';
 import {BaseError, isEssentialProjectsError, NotFoundError} from '@essential-projects/errors_ts';
@@ -15,11 +17,8 @@ import {
   ProcessTokenType,
 } from '@process-engine/flow_node_instance.contracts';
 
-import {loadModels} from './model_loader';
 import {
   FlowNodeInstanceModel,
-  IFlowNodeInstanceAttributes,
-  IProcessTokenAttributes,
   ProcessTokenModel,
 } from './schemas';
 
@@ -27,12 +26,9 @@ const logger: Logger = new Logger('processengine:persistence:flow_node_instance_
 
 export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, IDisposable {
 
-  public config: Sequelize.Options;
+  public config: SequelizeOptions;
 
-  private _flowNodeInstanceModel: Sequelize.Model<FlowNodeInstanceModel, IFlowNodeInstanceAttributes>;
-  private _processTokenModel: Sequelize.Model<ProcessTokenModel, IProcessTokenAttributes>;
-
-  private _sequelize: Sequelize.Sequelize;
+  private _sequelize: Sequelize;
   private _connectionManager: SequelizeConnectionManager;
 
   constructor(connectionManager: SequelizeConnectionManager) {
@@ -48,10 +44,10 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       return;
     }
     this._sequelize = await this._connectionManager.getConnection(this.config);
-    await loadModels(this._sequelize);
 
-    this._flowNodeInstanceModel = this._sequelize.models.FlowNodeInstance;
-    this._processTokenModel = this._sequelize.models.ProcessToken;
+    this._sequelize.addModels([ProcessTokenModel, FlowNodeInstanceModel]);
+    await this._sequelize.sync();
+
     logger.verbose('Done.');
   }
 
@@ -63,14 +59,14 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
   }
 
   public async querySpecificFlowNode(correlationId: string, processModelId: string, flowNodeId: string): Promise<FlowNodeInstance> {
-    const result: FlowNodeInstanceModel = await this._flowNodeInstanceModel.findOne({
+    const result: FlowNodeInstanceModel = await FlowNodeInstanceModel.findOne({
       where: {
         correlationId: correlationId,
         processModelId: processModelId,
         flowNodeId: flowNodeId,
       },
       include: [{
-        model: this._processTokenModel,
+        model: ProcessTokenModel,
         as: 'processTokens',
         required: true,
       }],
@@ -87,12 +83,12 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
   }
 
   public async queryByFlowNodeId(flowNodeId: string): Promise<Array<FlowNodeInstance>> {
-    const results: Array<FlowNodeInstanceModel> = await this._flowNodeInstanceModel.findAll({
+    const results: Array<FlowNodeInstanceModel> = await FlowNodeInstanceModel.findAll({
       where: {
         flowNodeId: flowNodeId,
       },
       include: [{
-        model: this._processTokenModel,
+        model: ProcessTokenModel,
         as: 'processTokens',
         required: true,
       }],
@@ -107,12 +103,12 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
   }
 
   public async queryByInstanceId(flowNodeInstanceId: string): Promise<FlowNodeInstance> {
-    const matchingFlowNodeInstance: FlowNodeInstanceModel = await this._flowNodeInstanceModel.findOne({
+    const matchingFlowNodeInstance: FlowNodeInstanceModel = await FlowNodeInstanceModel.findOne({
       where: {
         flowNodeInstanceId: flowNodeInstanceId,
       },
       include: [{
-        model: this._processTokenModel,
+        model: ProcessTokenModel,
         as: 'processTokens',
         required: true,
       }],
@@ -129,14 +125,14 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
   public async queryActive(): Promise<Array<FlowNodeInstance>> {
 
-    const results: Array<FlowNodeInstanceModel> = await this._flowNodeInstanceModel.findAll({
+    const results: Array<FlowNodeInstanceModel> = await FlowNodeInstanceModel.findAll({
       where: {
         state: {
           $in: [FlowNodeInstanceState.suspended, FlowNodeInstanceState.running],
         },
       },
       include: [{
-        model: this._processTokenModel,
+        model: ProcessTokenModel,
         as: 'processTokens',
         required: true,
       }],
@@ -149,7 +145,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
   public async queryActiveByProcessInstance(processInstanceId: string): Promise<Array<FlowNodeInstance>> {
 
-    const results: Array<FlowNodeInstanceModel> = await this._flowNodeInstanceModel.findAll({
+    const results: Array<FlowNodeInstanceModel> = await FlowNodeInstanceModel.findAll({
       where: {
         processInstanceId: processInstanceId,
         state: {
@@ -157,7 +153,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
         },
       },
       include: [{
-        model: this._processTokenModel,
+        model: ProcessTokenModel,
         as: 'processTokens',
         required: true,
       }],
@@ -171,7 +167,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
   public async queryActiveByCorrelationAndProcessModel(correlationId: string,
                                                        processModelId: string): Promise<Array<FlowNodeInstance>> {
 
-    const results: Array<FlowNodeInstanceModel> = await this._flowNodeInstanceModel.findAll({
+    const results: Array<FlowNodeInstanceModel> = await FlowNodeInstanceModel.findAll({
       where: {
         correlationId: correlationId,
         processModelId: processModelId,
@@ -180,7 +176,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
         },
       },
       include: [{
-        model: this._processTokenModel,
+        model: ProcessTokenModel,
         as: 'processTokens',
         required: true,
       }],
@@ -193,12 +189,12 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
   public async queryByState(state: FlowNodeInstanceState): Promise<Array<FlowNodeInstance>> {
 
-    const results: Array<FlowNodeInstanceModel> = await this._flowNodeInstanceModel.findAll({
+    const results: Array<FlowNodeInstanceModel> = await FlowNodeInstanceModel.findAll({
       where: {
         state: state,
       },
       include: [{
-        model: this._processTokenModel,
+        model: ProcessTokenModel,
         as: 'processTokens',
         required: true,
       }],
@@ -213,12 +209,12 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
   public async queryByCorrelation(correlationId: string): Promise<Array<FlowNodeInstance>> {
 
-    const results: Array<FlowNodeInstanceModel> = await this._flowNodeInstanceModel.findAll({
+    const results: Array<FlowNodeInstanceModel> = await FlowNodeInstanceModel.findAll({
       where: {
         correlationId: correlationId,
       },
       include: [{
-        model: this._processTokenModel,
+        model: ProcessTokenModel,
         as: 'processTokens',
         required: true,
       }],
@@ -234,12 +230,12 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
   public async queryByProcessModel(processModelId: string): Promise<Array<FlowNodeInstance>> {
 
-    const results: Array<FlowNodeInstanceModel> = await this._flowNodeInstanceModel.findAll({
+    const results: Array<FlowNodeInstanceModel> = await FlowNodeInstanceModel.findAll({
       where: {
         processModelId: processModelId,
       },
       include: [{
-        model: this._processTokenModel,
+        model: ProcessTokenModel,
         as: 'processTokens',
         required: true,
       }],
@@ -255,13 +251,13 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
   public async queryByCorrelationAndProcessModel(correlationId: string, processModelId: string): Promise<Array<FlowNodeInstance>> {
 
-    const results: Array<FlowNodeInstanceModel> = await this._flowNodeInstanceModel.findAll({
+    const results: Array<FlowNodeInstanceModel> = await FlowNodeInstanceModel.findAll({
       where: {
         correlationId: correlationId,
         processModelId: processModelId,
       },
       include: [{
-        model: this._processTokenModel,
+        model: ProcessTokenModel,
         as: 'processTokens',
         required: true,
       }],
@@ -274,13 +270,13 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
   public async querySuspendedByCorrelation(correlationId: string): Promise<Array<FlowNodeInstance>> {
 
-    const results: Array<FlowNodeInstanceModel> = await this._flowNodeInstanceModel.findAll({
+    const results: Array<FlowNodeInstanceModel> = await FlowNodeInstanceModel.findAll({
       where: {
         correlationId: correlationId,
         state: FlowNodeInstanceState.suspended,
       },
       include: [{
-        model: this._processTokenModel,
+        model: ProcessTokenModel,
         as: 'processTokens',
         required: true,
       }],
@@ -296,13 +292,13 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
   public async querySuspendedByProcessModel(processModelId: string): Promise<Array<FlowNodeInstance>> {
 
-    const results: Array<FlowNodeInstanceModel> = await this._flowNodeInstanceModel.findAll({
+    const results: Array<FlowNodeInstanceModel> = await FlowNodeInstanceModel.findAll({
       where: {
         processModelId: processModelId,
         state: FlowNodeInstanceState.suspended,
       },
       include: [{
-        model: this._processTokenModel,
+        model: ProcessTokenModel,
         as: 'processTokens',
         required: true,
       }],
@@ -318,13 +314,13 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
   public async querySuspendedByProcessInstance(processInstanceId: string): Promise<Array<FlowNodeInstance>> {
 
-    const results: Array<FlowNodeInstanceModel> = await this._flowNodeInstanceModel.findAll({
+    const results: Array<FlowNodeInstanceModel> = await FlowNodeInstanceModel.findAll({
       where: {
         processInstanceId: processInstanceId,
         state: FlowNodeInstanceState.suspended,
       },
       include: [{
-        model: this._processTokenModel,
+        model: ProcessTokenModel,
         as: 'processTokens',
         required: true,
       }],
@@ -340,12 +336,12 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
   public async queryProcessTokensByProcessInstanceId(processInstanceId: string): Promise<Array<ProcessToken>> {
 
-    const results: Array<FlowNodeInstanceModel> = await this._flowNodeInstanceModel.findAll({
+    const results: Array<FlowNodeInstanceModel> = await FlowNodeInstanceModel.findAll({
       where: {
         processInstanceId: processInstanceId,
       },
       include: [{
-        model: this._processTokenModel,
+        model: ProcessTokenModel,
         as: 'processTokens',
         required: true,
       }],
@@ -372,12 +368,12 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
   public async queryByProcessInstance(processInstanceId: string): Promise<Array<FlowNodeInstance>> {
 
-    const results: Array<FlowNodeInstanceModel> = await this._flowNodeInstanceModel.findAll({
+    const results: Array<FlowNodeInstanceModel> = await FlowNodeInstanceModel.findAll({
       where: {
         processInstanceId: processInstanceId,
       },
       include: [{
-        model: this._processTokenModel,
+        model: ProcessTokenModel,
         as: 'processTokens',
         required: true,
       }],
@@ -398,8 +394,8 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       return flowNodeInstance.id;
     }));
 
-    await this._sequelize.transaction(async(deleteTransaction: Sequelize.Transaction): Promise<void> => {
-      const flowNodeQueryParams: Sequelize.DestroyOptions = {
+    await this._sequelize.transaction(async(deleteTransaction: Transaction): Promise<void> => {
+      const flowNodeQueryParams: DestroyOptions = {
         where: {
           flowNodeInstanceId: {
             $in: flowNodeInstanceIdsToRemove,
@@ -408,7 +404,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
         transaction: deleteTransaction,
       };
 
-      const processTokenQueryParams: Sequelize.DestroyOptions = {
+      const processTokenQueryParams: DestroyOptions = {
         where: {
           flowNodeInstanceId: {
             $in: flowNodeInstanceIdsToRemove,
@@ -417,8 +413,8 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
         transaction: deleteTransaction,
       };
 
-      await this._processTokenModel.destroy(processTokenQueryParams);
-      await this._flowNodeInstanceModel.destroy(flowNodeQueryParams);
+      await ProcessTokenModel.destroy(processTokenQueryParams);
+      await FlowNodeInstanceModel.destroy(flowNodeQueryParams);
     });
   }
 
@@ -427,7 +423,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
                               processToken: ProcessToken,
                               previousFlowNodeInstanceId: string): Promise<FlowNodeInstance> {
 
-    const createParams: IFlowNodeInstanceAttributes = {
+    const createParams: any = {
       flowNodeInstanceId: flowNodeInstanceId,
       flowNodeId: flowNode.id,
       flowNodeType: flowNode.bpmnType,
@@ -443,9 +439,9 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const initialState: ProcessTokenType = ProcessTokenType.onEnter;
 
-    const createTransaction: Sequelize.Transaction = await this._sequelize.transaction();
+    const createTransaction: Transaction = await this._sequelize.transaction();
     try {
-      await this._flowNodeInstanceModel.create(createParams, {transaction: createTransaction});
+      await FlowNodeInstanceModel.create(createParams, {transaction: createTransaction});
       await this._createProcessTokenForFlowNodeInstance(flowNodeInstanceId, processToken, initialState, createTransaction);
       await createTransaction.commit();
 
@@ -519,7 +515,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     error?: Error,
   ): Promise<FlowNodeInstance> {
 
-    const matchingFlowNodeInstance: FlowNodeInstanceModel = await this._flowNodeInstanceModel.findOne({
+    const matchingFlowNodeInstance: FlowNodeInstanceModel = await FlowNodeInstanceModel.findOne({
       where: {
         flowNodeId: flowNodeId,
         flowNodeInstanceId: flowNodeInstanceId,
@@ -538,7 +534,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       matchingFlowNodeInstance.error = this._serializeError(error);
     }
 
-    const createTransaction: Sequelize.Transaction = await this._sequelize.transaction();
+    const createTransaction: Transaction = await this._sequelize.transaction();
     try {
       await matchingFlowNodeInstance.save({transaction: createTransaction});
       await this._createProcessTokenForFlowNodeInstance(flowNodeInstanceId, token, processTokenType, createTransaction);
@@ -563,16 +559,16 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     flowNodeInstanceId: string,
     token: ProcessToken,
     type: ProcessTokenType,
-    createTransaction: Sequelize.Transaction,
+    createTransaction: Transaction,
   ): Promise<void> {
 
-    const createParams: IProcessTokenAttributes = {
+    const createParams: any = {
       type: type,
       payload: JSON.stringify(token.payload),
       flowNodeInstanceId: flowNodeInstanceId,
     };
 
-    await this._processTokenModel.create(createParams, {transaction: createTransaction});
+    await ProcessTokenModel.create(createParams, {transaction: createTransaction});
   }
 
   private _serializeError(error: any): string {
