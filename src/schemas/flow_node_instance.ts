@@ -1,84 +1,67 @@
-import * as Sequelize from 'sequelize';
-import {ProcessTokenModel} from './process_token';
+import {AllowNull, Column, CreatedAt, DataType, HasMany, Model, Table, Unique, UpdatedAt} from 'sequelize-typescript';
 
 import {FlowNodeInstanceState} from '@process-engine/flow_node_instance.contracts';
 
-export interface IFlowNodeInstanceAttributes {
-  flowNodeInstanceId: string;
-  flowNodeId: string;
-  flowNodeType: string;
-  eventType?: string;
-  correlationId: string;
-  processModelId: string;
-  processInstanceId: string;
-  identity: string;
-  parentProcessInstanceId?: string;
-  state: FlowNodeInstanceState;
-  error?: string;
-  // Contains the association to the ProcessToken model.
-  // Must be optional, otherwise this property will be expected in the attribute payload of `sequelize.define`.
-  processTokens?: Array<ProcessTokenModel>;
-  // The ID of the FlowNodeInstance that was executed before.
-  // Will only be undefined for StartEvents.
-  previousFlowNodeInstanceId?: string;
-}
+import {ProcessTokenModel} from './process_token';
 
-export type FlowNodeInstanceModel = Sequelize.Instance<IFlowNodeInstanceAttributes> & IFlowNodeInstanceAttributes;
+@Table({modelName: 'FlowNodeInstance', tableName: 'FlowNodeInstance', version: true})
+export class FlowNodeInstanceModel extends Model<FlowNodeInstanceModel> {
 
-export function defineFlowNodeInstance(sequelize: Sequelize.Sequelize): Sequelize.Model<FlowNodeInstanceModel, IFlowNodeInstanceAttributes> {
+  @Column
+  @AllowNull(false)
+  @Unique
+  public flowNodeInstanceId: string;
 
-  const attributes: SequelizeAttributes<IFlowNodeInstanceAttributes> = {
-    flowNodeInstanceId: {
-      type: Sequelize.STRING,
-      allowNull: false,
-      unique: true,
-    },
-    flowNodeId: {
-      type: Sequelize.STRING,
-      allowNull: false,
-    },
-    flowNodeType: {
-      type: Sequelize.STRING,
-      allowNull: true, // With regards to old databases, null values must be allowed here
-    },
-    eventType: {
-      type: Sequelize.STRING,
-      allowNull: true,
-    },
-    correlationId: {
-      type: Sequelize.STRING,
-      allowNull: true,
-    },
-    processModelId: {
-      type: Sequelize.STRING,
-      allowNull: true,
-    },
-    processInstanceId: {
-      type: Sequelize.STRING,
-      allowNull: true,
-    },
-    parentProcessInstanceId: {
-      type: Sequelize.STRING,
-      allowNull: true,
-    },
-    identity: {
-      type: Sequelize.TEXT,
-      allowNull: true,
-    },
-    state: {
-      type: Sequelize.STRING,
-      allowNull: false,
-      defaultValue: 0,
-    },
-    error: {
-      type: Sequelize.TEXT,
-      allowNull: true,
-    },
-    previousFlowNodeInstanceId: {
-      type: Sequelize.STRING,
-      allowNull: true,
-    },
-  };
+  @Column
+  @AllowNull(false)
+  public flowNodeId: string;
 
-  return sequelize.define<FlowNodeInstanceModel, IFlowNodeInstanceAttributes>('FlowNodeInstance', attributes);
+  @Column
+  @AllowNull(true)
+  public flowNodeType: string;
+
+  @Column
+  @AllowNull(true)
+  public eventType: string;
+
+  @Column
+  @AllowNull(true)
+  public correlationId: string;
+
+  @Column
+  @AllowNull(true)
+  public processModelId: string;
+
+  @Column
+  @AllowNull(true)
+  public processInstanceId: string;
+
+  @Column
+  @AllowNull(true)
+  public parentProcessInstanceId: string;
+
+  @Column(DataType.TEXT)
+  @AllowNull(true)
+  public identity: string;
+
+  @Column({type: DataType.TEXT, defaultValue: 'finished'})
+  @AllowNull(true)
+  public state: FlowNodeInstanceState;
+
+  @Column(DataType.TEXT)
+  @AllowNull(true)
+  public error: string;
+
+  @Column
+  @AllowNull(true)
+  public previousFlowNodeInstanceId: string;
+
+  @HasMany(() => ProcessTokenModel)
+  public processTokens: Array<ProcessTokenModel>;
+
+  @CreatedAt
+  public createdAt?: Date;
+
+  @UpdatedAt
+  public updatedAt?: Date;
 }
