@@ -9,7 +9,7 @@ export class FlowNodeInstanceModel extends Model<FlowNodeInstanceModel> {
 
   @AllowNull(false)
   @Unique
-  @Column
+  @Column(DataType.STRING)
   public flowNodeInstanceId: string;
 
   @AllowNull(false)
