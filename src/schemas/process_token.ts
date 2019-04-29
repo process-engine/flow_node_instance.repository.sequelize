@@ -7,12 +7,12 @@ import {FlowNodeInstanceModel} from './flow_node_instance';
 @Table({modelName: 'ProcessToken', tableName: 'ProcessToken', version: true})
 export class ProcessTokenModel extends Model<ProcessTokenModel> {
 
-  @Column({type: DataType.STRING})
   @AllowNull(false)
+  @Column({type: DataType.STRING})
   public type: ProcessTokenType;
 
-  @Column({type: DataType.TEXT})
   @AllowNull(true)
+  @Column({type: DataType.TEXT})
   public payload: string;
 
   @ForeignKey(() => FlowNodeInstanceModel)

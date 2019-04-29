@@ -7,53 +7,53 @@ import {ProcessTokenModel} from './process_token';
 @Table({modelName: 'FlowNodeInstance', tableName: 'FlowNodeInstance', version: true})
 export class FlowNodeInstanceModel extends Model<FlowNodeInstanceModel> {
 
-  @Column
   @AllowNull(false)
   @Unique
+  @Column
   public flowNodeInstanceId: string;
 
-  @Column
   @AllowNull(false)
+  @Column
   public flowNodeId: string;
 
-  @Column
   @AllowNull(true)
+  @Column
   public flowNodeType: string;
 
-  @Column
   @AllowNull(true)
+  @Column
   public eventType: string;
 
-  @Column
   @AllowNull(true)
+  @Column
   public correlationId: string;
 
-  @Column
   @AllowNull(true)
+  @Column
   public processModelId: string;
 
-  @Column
   @AllowNull(true)
+  @Column
   public processInstanceId: string;
 
-  @Column
   @AllowNull(true)
+  @Column
   public parentProcessInstanceId: string;
 
-  @Column(DataType.TEXT)
   @AllowNull(true)
+  @Column(DataType.TEXT)
   public identity: string;
 
-  @Column({type: DataType.TEXT, defaultValue: 'finished'})
   @AllowNull(true)
+  @Column({type: DataType.TEXT, defaultValue: 'finished'})
   public state: FlowNodeInstanceState;
 
-  @Column(DataType.TEXT)
   @AllowNull(true)
+  @Column(DataType.TEXT)
   public error: string;
 
-  @Column
   @AllowNull(true)
+  @Column
   public previousFlowNodeInstanceId: string;
 
   @HasMany(() => ProcessTokenModel)
