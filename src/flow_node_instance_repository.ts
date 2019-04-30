@@ -1,6 +1,6 @@
 import {Logger} from 'loggerhythm';
 
-import {DestroyOptions, Transaction} from 'sequelize';
+import {DestroyOptions, Op as Operators, Transaction} from 'sequelize';
 import {Sequelize, SequelizeOptions} from 'sequelize-typescript';
 
 import {IDisposable} from '@essential-projects/bootstrapper_contracts';
@@ -128,7 +128,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     const results: Array<FlowNodeInstanceModel> = await FlowNodeInstanceModel.findAll({
       where: {
         state: {
-          $in: [FlowNodeInstanceState.suspended, FlowNodeInstanceState.running],
+          [Operators.in]: [FlowNodeInstanceState.suspended, FlowNodeInstanceState.running],
         },
       },
       include: [{
@@ -149,7 +149,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       where: {
         processInstanceId: processInstanceId,
         state: {
-          $in: [FlowNodeInstanceState.suspended, FlowNodeInstanceState.running],
+          [Operators.in]: [FlowNodeInstanceState.suspended, FlowNodeInstanceState.running],
         },
       },
       include: [{
@@ -172,7 +172,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
         correlationId: correlationId,
         processModelId: processModelId,
         state: {
-          $in: [FlowNodeInstanceState.suspended, FlowNodeInstanceState.running],
+          [Operators.in]: [FlowNodeInstanceState.suspended, FlowNodeInstanceState.running],
         },
       },
       include: [{
@@ -398,7 +398,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       const flowNodeQueryParams: DestroyOptions = {
         where: {
           flowNodeInstanceId: {
-            $in: flowNodeInstanceIdsToRemove,
+            [Operators.in]: flowNodeInstanceIdsToRemove,
           },
         },
         transaction: deleteTransaction,
@@ -407,7 +407,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       const processTokenQueryParams: DestroyOptions = {
         where: {
           flowNodeInstanceId: {
-            $in: flowNodeInstanceIdsToRemove,
+            [Operators.in]: flowNodeInstanceIdsToRemove,
           },
         },
         transaction: deleteTransaction,
