@@ -19,7 +19,10 @@ export class ProcessTokenModel extends Model<ProcessTokenModel> {
   @Column({type: DataType.STRING})
   public flowNodeInstanceId: string;
 
-  @BelongsTo(() => FlowNodeInstanceModel, 'flowNodeInstanceId')
+  @BelongsTo(() => FlowNodeInstanceModel, {
+    foreignKey: 'flowNodeInstanceId',
+    targetKey: 'flowNodeInstanceId',
+  })
   public flowNodeInstance: FlowNodeInstanceModel;
 
   @CreatedAt
