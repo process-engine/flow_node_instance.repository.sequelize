@@ -44,7 +44,7 @@ export class FlowNodeInstanceModel extends Model<FlowNodeInstanceModel> {
   @Column(DataType.TEXT)
   public identity: string;
 
-  @AllowNull(true)
+  @AllowNull(false)
   @Column({type: DataType.TEXT, defaultValue: 'finished'})
   public state: FlowNodeInstanceState;
 
