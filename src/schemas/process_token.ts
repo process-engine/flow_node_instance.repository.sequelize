@@ -4,7 +4,7 @@ import {ProcessTokenType} from '@process-engine/flow_node_instance.contracts';
 
 import {FlowNodeInstanceModel} from './flow_node_instance';
 
-@Table({modelName: 'ProcessToken', tableName: 'ProcessTokens', version: true})
+@Table({modelName: 'ProcessToken', tableName: 'ProcessTokens'})
 export class ProcessTokenModel extends Model<ProcessTokenModel> {
 
   @AllowNull(false)

@@ -4,7 +4,7 @@ import {FlowNodeInstanceState} from '@process-engine/flow_node_instance.contract
 
 import {ProcessTokenModel} from './process_token';
 
-@Table({modelName: 'FlowNodeInstance', tableName: 'FlowNodeInstances', version: true})
+@Table({modelName: 'FlowNodeInstance', tableName: 'FlowNodeInstances'})
 export class FlowNodeInstanceModel extends Model<FlowNodeInstanceModel> {
 
   @AllowNull(false)
