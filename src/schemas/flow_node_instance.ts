@@ -1,84 +1,71 @@
-import * as Sequelize from 'sequelize';
-import {ProcessTokenModel} from './process_token';
+import {AllowNull, Column, CreatedAt, DataType, HasMany, Model, Table, Unique, UpdatedAt} from 'sequelize-typescript';
 
 import {FlowNodeInstanceState} from '@process-engine/flow_node_instance.contracts';
 
-export interface IFlowNodeInstanceAttributes {
-  flowNodeInstanceId: string;
-  flowNodeId: string;
-  flowNodeType: string;
-  eventType?: string;
-  correlationId: string;
-  processModelId: string;
-  processInstanceId: string;
-  identity: string;
-  parentProcessInstanceId?: string;
-  state: FlowNodeInstanceState;
-  error?: string;
-  // Contains the association to the ProcessToken model.
-  // Must be optional, otherwise this property will be expected in the attribute payload of `sequelize.define`.
-  processTokens?: Array<ProcessTokenModel>;
-  // The ID of the FlowNodeInstance that was executed before.
-  // Will only be undefined for StartEvents.
-  previousFlowNodeInstanceId?: string;
-}
+import {ProcessTokenModel} from './process_token';
 
-export type FlowNodeInstanceModel = Sequelize.Instance<IFlowNodeInstanceAttributes> & IFlowNodeInstanceAttributes;
+@Table({modelName: 'FlowNodeInstance', tableName: 'FlowNodeInstances'})
+export class FlowNodeInstanceModel extends Model<FlowNodeInstanceModel> {
 
-export function defineFlowNodeInstance(sequelize: Sequelize.Sequelize): Sequelize.Model<FlowNodeInstanceModel, IFlowNodeInstanceAttributes> {
+  @AllowNull(false)
+  @Unique
+  @Column(DataType.STRING)
+  public flowNodeInstanceId: string;
 
-  const attributes: SequelizeAttributes<IFlowNodeInstanceAttributes> = {
-    flowNodeInstanceId: {
-      type: Sequelize.STRING,
-      allowNull: false,
-      unique: true,
-    },
-    flowNodeId: {
-      type: Sequelize.STRING,
-      allowNull: false,
-    },
-    flowNodeType: {
-      type: Sequelize.STRING,
-      allowNull: true, // With regards to old databases, null values must be allowed here
-    },
-    eventType: {
-      type: Sequelize.STRING,
-      allowNull: true,
-    },
-    correlationId: {
-      type: Sequelize.STRING,
-      allowNull: true,
-    },
-    processModelId: {
-      type: Sequelize.STRING,
-      allowNull: true,
-    },
-    processInstanceId: {
-      type: Sequelize.STRING,
-      allowNull: true,
-    },
-    parentProcessInstanceId: {
-      type: Sequelize.STRING,
-      allowNull: true,
-    },
-    identity: {
-      type: Sequelize.TEXT,
-      allowNull: true,
-    },
-    state: {
-      type: Sequelize.STRING,
-      allowNull: false,
-      defaultValue: 0,
-    },
-    error: {
-      type: Sequelize.TEXT,
-      allowNull: true,
-    },
-    previousFlowNodeInstanceId: {
-      type: Sequelize.STRING,
-      allowNull: true,
-    },
-  };
+  @AllowNull(false)
+  @Column(DataType.STRING)
+  public flowNodeId: string;
 
-  return sequelize.define<FlowNodeInstanceModel, IFlowNodeInstanceAttributes>('FlowNodeInstance', attributes);
+  @AllowNull(true)
+  @Column(DataType.STRING)
+  public flowNodeType: string;
+
+  @AllowNull(true)
+  @Column(DataType.STRING)
+  public eventType: string;
+
+  @AllowNull(true)
+  @Column(DataType.STRING)
+  public correlationId: string;
+
+  @AllowNull(true)
+  @Column(DataType.STRING)
+  public processModelId: string;
+
+  @AllowNull(true)
+  @Column(DataType.STRING)
+  public processInstanceId: string;
+
+  @AllowNull(true)
+  @Column(DataType.STRING)
+  public parentProcessInstanceId: string;
+
+  @AllowNull(true)
+  @Column(DataType.TEXT)
+  public identity: string;
+
+  @AllowNull(false)
+  @Column({type: DataType.TEXT, defaultValue: 'finished'})
+  public state: FlowNodeInstanceState;
+
+  @AllowNull(true)
+  @Column(DataType.TEXT)
+  public error: string;
+
+  @AllowNull(true)
+  @Column(DataType.STRING)
+  public previousFlowNodeInstanceId: string;
+
+  @HasMany(() => ProcessTokenModel, {
+    as: 'processTokens',
+    foreignKey: 'flowNodeInstanceId',
+    sourceKey: 'flowNodeInstanceId',
+  })
+  public processTokens: Array<ProcessTokenModel>;
+
+  @CreatedAt
+  public createdAt?: Date;
+
+  @UpdatedAt
+  public updatedAt?: Date;
 }
