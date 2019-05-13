@@ -83,13 +83,13 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
   }
 
   public async querySpecificFlowNodeByProcessInstanceId(processInstanceId: string, flowNodeId: string): Promise<FlowNodeInstance> {
-    const result: FlowNodeInstanceModel = await this._flowNodeInstanceModel.findOne({
+    const result: FlowNodeInstanceModel = await FlowNodeInstanceModel.findOne({
       where: {
         processInstanceId: processInstanceId,
         flowNodeId: flowNodeId,
       },
       include: [{
-        model: this._processTokenModel,
+        model: ProcessTokenModel,
         as: 'processTokens',
         required: true,
       }],
