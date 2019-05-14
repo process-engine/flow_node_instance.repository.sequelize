@@ -19,7 +19,7 @@
     "@types/clone": "^0.1.30",
     "clone": "^2.1.2",
     "loggerhythm": "^3.0.3",
-    "sequelize": "~5.7.0",
+    "sequelize": "^5.8.0",
     "sequelize-typescript": "next"
   },
   "devDependencies": {
