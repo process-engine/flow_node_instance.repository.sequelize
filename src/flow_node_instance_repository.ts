@@ -82,8 +82,8 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     return flowNodeInstance;
   }
 
-  public async querySpecificFlowNodeByProcessInstanceId(processInstanceId: string, flowNodeId: string): Promise<FlowNodeInstance> {
-    const result: FlowNodeInstanceModel = await FlowNodeInstanceModel.findOne({
+  public async queryFlowNodesByProcessInstanceId(processInstanceId: string, flowNodeId: string): Promise<Array<FlowNodeInstance>> {
+    const results: Array<FlowNodeInstanceModel> = await FlowNodeInstanceModel.findAll({
       where: {
         processInstanceId: processInstanceId,
         flowNodeId: flowNodeId,
@@ -95,14 +95,14 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       }],
     });
 
-    const flowNodeInstanceNotFound: boolean = result === null || result === undefined;
+    const flowNodeInstanceNotFound: boolean = results === null || results === undefined;
     if (flowNodeInstanceNotFound) {
       throw new NotFoundError(`FlowNodeInstance with flowNodeId "${flowNodeId}" does not exist on this instance.`);
     }
 
-    const flowNodeInstance: FlowNodeInstance = this._convertFlowNodeInstanceToRuntimeObject(result);
+    const flowNodeInstances: Array<FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
 
-    return flowNodeInstance;
+    return flowNodeInstances;
   }
 
   public async queryByFlowNodeId(flowNodeId: string): Promise<Array<FlowNodeInstance>> {
