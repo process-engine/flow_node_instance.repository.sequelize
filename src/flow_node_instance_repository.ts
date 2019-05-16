@@ -95,11 +95,6 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       }],
     });
 
-    const flowNodeInstanceNotFound: boolean = results === null || results === undefined;
-    if (flowNodeInstanceNotFound) {
-      throw new NotFoundError(`FlowNodeInstance with flowNodeId "${flowNodeId}" does not exist on this instance.`);
-    }
-
     const flowNodeInstances: Array<FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
 
     return flowNodeInstances;
