@@ -82,7 +82,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     return flowNodeInstance;
   }
 
-  public async queryFlowNodesByProcessInstanceId(processInstanceId: string, flowNodeId: string): Promise<Array<FlowNodeInstance>> {
+  public async queryFlowNodeInstancesByProcessInstanceId(processInstanceId: string, flowNodeId: string): Promise<Array<FlowNodeInstance>> {
     const results: Array<FlowNodeInstanceModel> = await FlowNodeInstanceModel.findAll({
       where: {
         processInstanceId: processInstanceId,
