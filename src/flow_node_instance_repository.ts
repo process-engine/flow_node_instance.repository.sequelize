@@ -93,6 +93,9 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
         as: 'processTokens',
         required: true,
       }],
+      order: [
+        [ 'processTokens', 'createdAt' ],
+      ],
     });
 
     const flowNodeInstances: Array<FlowNodeInstance> = results.map(this._convertFlowNodeInstanceToRuntimeObject.bind(this));
