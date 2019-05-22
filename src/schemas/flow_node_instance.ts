@@ -1,4 +1,6 @@
-import {AllowNull, Column, CreatedAt, DataType, HasMany, Model, Table, Unique, UpdatedAt} from 'sequelize-typescript';
+import {
+  AllowNull, Column, CreatedAt, DataType, HasMany, Model, Table, Unique, UpdatedAt,
+} from 'sequelize-typescript';
 
 import {FlowNodeInstanceState} from '@process-engine/flow_node_instance.contracts';
 
@@ -56,7 +58,7 @@ export class FlowNodeInstanceModel extends Model<FlowNodeInstanceModel> {
   @Column(DataType.STRING)
   public previousFlowNodeInstanceId: string;
 
-  @HasMany(() => ProcessTokenModel, {
+  @HasMany((): typeof ProcessTokenModel => ProcessTokenModel, {
     as: 'processTokens',
     foreignKey: 'flowNodeInstanceId',
     sourceKey: 'flowNodeInstanceId',
@@ -68,4 +70,5 @@ export class FlowNodeInstanceModel extends Model<FlowNodeInstanceModel> {
 
   @UpdatedAt
   public updatedAt?: Date;
+
 }

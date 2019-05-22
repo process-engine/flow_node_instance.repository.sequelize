@@ -1,4 +1,6 @@
-import {AllowNull, BelongsTo, Column, CreatedAt, DataType, ForeignKey, Model, Table, UpdatedAt} from 'sequelize-typescript';
+import {
+  AllowNull, BelongsTo, Column, CreatedAt, DataType, ForeignKey, Model, Table, UpdatedAt,
+} from 'sequelize-typescript';
 
 import {ProcessTokenType} from '@process-engine/flow_node_instance.contracts';
 
@@ -15,11 +17,11 @@ export class ProcessTokenModel extends Model<ProcessTokenModel> {
   @Column({type: DataType.TEXT})
   public payload: string;
 
-  @ForeignKey(() => FlowNodeInstanceModel)
+  @ForeignKey((): typeof FlowNodeInstanceModel => FlowNodeInstanceModel)
   @Column({type: DataType.STRING})
   public flowNodeInstanceId: string;
 
-  @BelongsTo(() => FlowNodeInstanceModel, {
+  @BelongsTo((): typeof FlowNodeInstanceModel => FlowNodeInstanceModel, {
     foreignKey: 'flowNodeInstanceId',
     targetKey: 'flowNodeInstanceId',
   })
@@ -30,4 +32,5 @@ export class ProcessTokenModel extends Model<ProcessTokenModel> {
 
   @UpdatedAt
   public updatedAt?: Date;
+
 }
