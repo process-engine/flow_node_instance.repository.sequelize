@@ -463,22 +463,23 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const initialState = ProcessTokenType.onEnter;
 
+    // NOTE: This must happen prior to creating the transaction, or we risk running into timeouts with postgres and mysql.
+    // This behavior has been observed when dealing with multiple parallel execution branches.
+    const matchingFlowNodeInstance = await FlowNodeInstanceModel.findOne({
+      where: {
+        flowNodeInstanceId: flowNodeInstanceId,
+      },
+    });
+
     const createTransaction = await this.sequelizeInstance.transaction();
     try {
-      const matchingFlowNodeInstances = await FlowNodeInstanceModel.findAll({
-        where: {
-          flowNodeInstanceId: flowNodeInstanceId,
-        },
-      });
-
-      // TODO: Workaround for solving the Problem with multiple previousFlowNodeInstanceIds for ParallelJoinGateways.
-      const matchingEntryFound = matchingFlowNodeInstances !== undefined && matchingFlowNodeInstances.length > 0;
-      if (matchingEntryFound) {
-        const matchingFlowNodeInstance = matchingFlowNodeInstances[0];
+      // Workaround for solving the Problem with multiple previousFlowNodeInstanceIds for ParallelJoinGateways.
+      if (matchingFlowNodeInstance) {
         matchingFlowNodeInstance.previousFlowNodeInstanceId = previousFlowNodeInstanceId;
-
         await matchingFlowNodeInstance.save({transaction: createTransaction});
+
       } else {
+
         await FlowNodeInstanceModel.create(createParams, {transaction: createTransaction});
         await this.createProcessTokenForFlowNodeInstance(flowNodeInstanceId, processToken, initialState, createTransaction);
       }
