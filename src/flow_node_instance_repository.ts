@@ -470,11 +470,10 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const createTransaction = await this.sequelizeInstance.transaction();
     try {
-      // Workaround for solving the Problem with multiple previousFlowNodeInstanceIds for ParallelJoinGateways.
+      // Workaround for solving the problem with multiple previousFlowNodeInstanceIds for ParallelJoinGateways.
       if (matchingFlowNodeInstance) {
         matchingFlowNodeInstance.previousFlowNodeInstanceId = previousFlowNodeInstanceId;
         await matchingFlowNodeInstance.save({transaction: createTransaction});
-
       } else {
 
         await FlowNodeInstanceModel.create(createParams, {transaction: createTransaction});
