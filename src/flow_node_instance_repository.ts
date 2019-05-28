@@ -462,9 +462,6 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     };
 
     const initialState = ProcessTokenType.onEnter;
-
-    // NOTE: This must happen prior to creating the transaction, or we risk running into timeouts with postgres and mysql.
-    // This behavior has been observed when dealing with multiple parallel execution branches.
     const matchingFlowNodeInstance = await FlowNodeInstanceModel.findOne({
       where: {
         flowNodeInstanceId: flowNodeInstanceId,
