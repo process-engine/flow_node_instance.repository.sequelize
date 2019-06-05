@@ -462,11 +462,24 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     };
 
     const initialState = ProcessTokenType.onEnter;
+    const matchingFlowNodeInstance = await FlowNodeInstanceModel.findOne({
+      where: {
+        flowNodeInstanceId: flowNodeInstanceId,
+      },
+    });
 
     const createTransaction = await this.sequelizeInstance.transaction();
     try {
-      await FlowNodeInstanceModel.create(createParams, {transaction: createTransaction});
-      await this.createProcessTokenForFlowNodeInstance(flowNodeInstanceId, processToken, initialState, createTransaction);
+      // Workaround for solving the problem with multiple previousFlowNodeInstanceIds for ParallelJoinGateways.
+      if (matchingFlowNodeInstance) {
+        matchingFlowNodeInstance.previousFlowNodeInstanceId = previousFlowNodeInstanceId;
+        await matchingFlowNodeInstance.save({transaction: createTransaction});
+      } else {
+
+        await FlowNodeInstanceModel.create(createParams, {transaction: createTransaction});
+        await this.createProcessTokenForFlowNodeInstance(flowNodeInstanceId, processToken, initialState, createTransaction);
+      }
+
       await createTransaction.commit();
 
       return this.queryByInstanceId(flowNodeInstanceId);
