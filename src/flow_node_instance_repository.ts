@@ -24,6 +24,11 @@ import {
 
 const logger: Logger = new Logger('processengine:persistence:flow_node_instance_repository');
 
+type Pagination = {
+  limit?: number;
+  offset?: number;
+};
+
 export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, IDisposable {
 
   public config: SequelizeOptions;
@@ -82,47 +87,6 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     return flowNodeInstance;
   }
 
-  public async queryFlowNodeInstancesByProcessInstanceId(processInstanceId: string, flowNodeId: string): Promise<Array<FlowNodeInstance>> {
-    const results = await FlowNodeInstanceModel.findAll({
-      where: {
-        processInstanceId: processInstanceId,
-        flowNodeId: flowNodeId,
-      },
-      include: [{
-        model: ProcessTokenModel,
-        as: 'processTokens',
-        required: true,
-      }],
-      order: [
-        ['processTokens', 'createdAt'],
-      ],
-    });
-
-    const flowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
-
-    return flowNodeInstances;
-  }
-
-  public async queryByFlowNodeId(flowNodeId: string): Promise<Array<FlowNodeInstance>> {
-    const results = await FlowNodeInstanceModel.findAll({
-      where: {
-        flowNodeId: flowNodeId,
-      },
-      include: [{
-        model: ProcessTokenModel,
-        as: 'processTokens',
-        required: true,
-      }],
-      order: [
-        ['id', 'ASC'],
-      ],
-    });
-
-    const flowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
-
-    return flowNodeInstances;
-  }
-
   public async queryByInstanceId(flowNodeInstanceId: string): Promise<FlowNodeInstance> {
     const matchingFlowNodeInstance = await FlowNodeInstanceModel.findOne({
       where: {
@@ -144,7 +108,55 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     return runtimeFlowNodeInstance;
   }
 
-  public async queryActive(): Promise<Array<FlowNodeInstance>> {
+  public async queryFlowNodeInstancesByProcessInstanceId(
+    processInstanceId: string,
+    flowNodeId: string,
+    offset: number = 0,
+    limit: number = 0,
+  ): Promise<Array<FlowNodeInstance>> {
+    const results = await FlowNodeInstanceModel.findAll({
+      where: {
+        processInstanceId: processInstanceId,
+        flowNodeId: flowNodeId,
+      },
+      include: [{
+        model: ProcessTokenModel,
+        as: 'processTokens',
+        required: true,
+      }],
+      order: [
+        ['processTokens', 'createdAt'],
+      ],
+      ...this.buildPagination(offset, limit),
+    });
+
+    const flowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
+
+    return flowNodeInstances;
+  }
+
+  public async queryByFlowNodeId(flowNodeId: string, offset: number = 0, limit: number = 0): Promise<Array<FlowNodeInstance>> {
+    const results = await FlowNodeInstanceModel.findAll({
+      where: {
+        flowNodeId: flowNodeId,
+      },
+      include: [{
+        model: ProcessTokenModel,
+        as: 'processTokens',
+        required: true,
+      }],
+      order: [
+        ['id', 'ASC'],
+      ],
+      ...this.buildPagination(offset, limit),
+    });
+
+    const flowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
+
+    return flowNodeInstances;
+  }
+
+  public async queryActive(offset: number = 0, limit: number = 0): Promise<Array<FlowNodeInstance>> {
 
     const results = await FlowNodeInstanceModel.findAll({
       where: {
@@ -157,6 +169,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
         as: 'processTokens',
         required: true,
       }],
+      ...this.buildPagination(offset, limit),
     });
 
     const runtimeFlowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
@@ -164,7 +177,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     return runtimeFlowNodeInstances;
   }
 
-  public async queryActiveByProcessInstance(processInstanceId: string): Promise<Array<FlowNodeInstance>> {
+  public async queryActiveByProcessInstance(processInstanceId: string, offset: number = 0, limit: number = 0): Promise<Array<FlowNodeInstance>> {
 
     const results = await FlowNodeInstanceModel.findAll({
       where: {
@@ -178,6 +191,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
         as: 'processTokens',
         required: true,
       }],
+      ...this.buildPagination(offset, limit),
     });
 
     const runtimeFlowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
@@ -188,6 +202,8 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
   public async queryActiveByCorrelationAndProcessModel(
     correlationId: string,
     processModelId: string,
+    offset: number = 0,
+    limit: number = 0,
   ): Promise<Array<FlowNodeInstance>> {
 
     const results = await FlowNodeInstanceModel.findAll({
@@ -203,6 +219,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
         as: 'processTokens',
         required: true,
       }],
+      ...this.buildPagination(offset, limit),
     });
 
     const flowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
@@ -210,7 +227,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     return flowNodeInstances;
   }
 
-  public async queryByState(state: FlowNodeInstanceState): Promise<Array<FlowNodeInstance>> {
+  public async queryByState(state: FlowNodeInstanceState, offset: number = 0, limit: number = 0): Promise<Array<FlowNodeInstance>> {
 
     const results = await FlowNodeInstanceModel.findAll({
       where: {
@@ -224,13 +241,14 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       order: [
         ['id', 'ASC'],
       ],
+      ...this.buildPagination(offset, limit),
     });
     const flowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
 
     return flowNodeInstances;
   }
 
-  public async queryByCorrelation(correlationId: string): Promise<Array<FlowNodeInstance>> {
+  public async queryByCorrelation(correlationId: string, offset: number = 0, limit: number = 0): Promise<Array<FlowNodeInstance>> {
 
     const results = await FlowNodeInstanceModel.findAll({
       where: {
@@ -244,6 +262,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       order: [
         ['id', 'ASC'],
       ],
+      ...this.buildPagination(offset, limit),
     });
 
     const flowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
@@ -251,7 +270,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     return flowNodeInstances;
   }
 
-  public async queryByProcessModel(processModelId: string): Promise<Array<FlowNodeInstance>> {
+  public async queryByProcessModel(processModelId: string, offset: number = 0, limit: number = 0): Promise<Array<FlowNodeInstance>> {
 
     const results = await FlowNodeInstanceModel.findAll({
       where: {
@@ -265,6 +284,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       order: [
         ['id', 'ASC'],
       ],
+      ...this.buildPagination(offset, limit),
     });
 
     const flowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
@@ -272,7 +292,12 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     return flowNodeInstances;
   }
 
-  public async queryByCorrelationAndProcessModel(correlationId: string, processModelId: string): Promise<Array<FlowNodeInstance>> {
+  public async queryByCorrelationAndProcessModel(
+    correlationId: string,
+    processModelId: string,
+    offset: number = 0,
+    limit: number = 0,
+  ): Promise<Array<FlowNodeInstance>> {
 
     const results = await FlowNodeInstanceModel.findAll({
       where: {
@@ -284,6 +309,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
         as: 'processTokens',
         required: true,
       }],
+      ...this.buildPagination(offset, limit),
     });
 
     const flowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
@@ -291,7 +317,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     return flowNodeInstances;
   }
 
-  public async querySuspendedByCorrelation(correlationId: string): Promise<Array<FlowNodeInstance>> {
+  public async querySuspendedByCorrelation(correlationId: string, offset: number = 0, limit: number = 0): Promise<Array<FlowNodeInstance>> {
 
     const results = await FlowNodeInstanceModel.findAll({
       where: {
@@ -306,6 +332,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       order: [
         ['id', 'ASC'],
       ],
+      ...this.buildPagination(offset, limit),
     });
 
     const flowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
@@ -313,7 +340,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     return flowNodeInstances;
   }
 
-  public async querySuspendedByProcessModel(processModelId: string): Promise<Array<FlowNodeInstance>> {
+  public async querySuspendedByProcessModel(processModelId: string, offset: number = 0, limit: number = 0): Promise<Array<FlowNodeInstance>> {
 
     const results = await FlowNodeInstanceModel.findAll({
       where: {
@@ -328,6 +355,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       order: [
         ['id', 'ASC'],
       ],
+      ...this.buildPagination(offset, limit),
     });
 
     const flowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
@@ -335,7 +363,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     return flowNodeInstances;
   }
 
-  public async querySuspendedByProcessInstance(processInstanceId: string): Promise<Array<FlowNodeInstance>> {
+  public async querySuspendedByProcessInstance(processInstanceId: string, offset: number = 0, limit: number = 0): Promise<Array<FlowNodeInstance>> {
 
     const results = await FlowNodeInstanceModel.findAll({
       where: {
@@ -350,6 +378,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       order: [
         ['id', 'ASC'],
       ],
+      ...this.buildPagination(offset, limit),
     });
 
     const flowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
@@ -357,7 +386,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     return flowNodeInstances;
   }
 
-  public async queryProcessTokensByProcessInstanceId(processInstanceId: string): Promise<Array<ProcessToken>> {
+  public async queryProcessTokensByProcessInstanceId(processInstanceId: string, offset: number = 0, limit: number = 0): Promise<Array<ProcessToken>> {
 
     const results = await FlowNodeInstanceModel.findAll({
       where: {
@@ -371,6 +400,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       order: [
         ['id', 'ASC'],
       ],
+      ...this.buildPagination(offset, limit),
     });
 
     const processTokens: Array<ProcessToken> = [];
@@ -388,7 +418,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     return processTokens;
   }
 
-  public async queryByProcessInstance(processInstanceId: string): Promise<Array<FlowNodeInstance>> {
+  public async queryByProcessInstance(processInstanceId: string, offset: number = 0, limit: number = 0): Promise<Array<FlowNodeInstance>> {
 
     const results = await FlowNodeInstanceModel.findAll({
       where: {
@@ -402,6 +432,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
       order: [
         ['id', 'ASC'],
       ],
+      ...this.buildPagination(offset, limit),
     });
 
     const flowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
@@ -702,6 +733,20 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     } catch (error) {
       return undefined;
     }
+  }
+
+  private buildPagination(offset: number, limit: number): Pagination {
+    const pagination: Pagination = {};
+
+    if (offset > 0) {
+      pagination.offset = offset;
+    }
+
+    if (limit > 0) {
+      pagination.limit = limit;
+    }
+
+    return pagination;
   }
 
 }
