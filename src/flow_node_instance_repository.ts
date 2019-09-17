@@ -11,6 +11,7 @@ import {
   EventType,
   FlowNode,
   FlowNodeInstance,
+  FlowNodeInstanceList,
   FlowNodeInstanceState,
   IFlowNodeInstanceRepository,
   ProcessToken,
@@ -113,7 +114,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     flowNodeId: string,
     offset: number = 0,
     limit: number = 0,
-  ): Promise<Array<FlowNodeInstance>> {
+  ): Promise<FlowNodeInstanceList> {
     const results = await FlowNodeInstanceModel.findAll({
       where: {
         processInstanceId: processInstanceId,
@@ -132,10 +133,10 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const flowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
 
-    return flowNodeInstances;
+    return {flowNodeInstances: flowNodeInstances, totalCount: flowNodeInstances.length};
   }
 
-  public async queryByFlowNodeId(flowNodeId: string, offset: number = 0, limit: number = 0): Promise<Array<FlowNodeInstance>> {
+  public async queryByFlowNodeId(flowNodeId: string, offset: number = 0, limit: number = 0): Promise<FlowNodeInstanceList> {
     const results = await FlowNodeInstanceModel.findAll({
       where: {
         flowNodeId: flowNodeId,
@@ -153,10 +154,10 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const flowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
 
-    return flowNodeInstances;
+    return {flowNodeInstances: flowNodeInstances, totalCount: flowNodeInstances.length};
   }
 
-  public async queryActive(offset: number = 0, limit: number = 0): Promise<Array<FlowNodeInstance>> {
+  public async queryActive(offset: number = 0, limit: number = 0): Promise<FlowNodeInstanceList> {
 
     const results = await FlowNodeInstanceModel.findAll({
       where: {
@@ -174,10 +175,10 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const runtimeFlowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
 
-    return runtimeFlowNodeInstances;
+    return {flowNodeInstances: runtimeFlowNodeInstances, totalCount: runtimeFlowNodeInstances.length};
   }
 
-  public async queryActiveByProcessInstance(processInstanceId: string, offset: number = 0, limit: number = 0): Promise<Array<FlowNodeInstance>> {
+  public async queryActiveByProcessInstance(processInstanceId: string, offset: number = 0, limit: number = 0): Promise<FlowNodeInstanceList> {
 
     const results = await FlowNodeInstanceModel.findAll({
       where: {
@@ -196,7 +197,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const runtimeFlowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
 
-    return runtimeFlowNodeInstances;
+    return {flowNodeInstances: runtimeFlowNodeInstances, totalCount: runtimeFlowNodeInstances.length};
   }
 
   public async queryActiveByCorrelationAndProcessModel(
@@ -204,7 +205,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     processModelId: string,
     offset: number = 0,
     limit: number = 0,
-  ): Promise<Array<FlowNodeInstance>> {
+  ): Promise<FlowNodeInstanceList> {
 
     const results = await FlowNodeInstanceModel.findAll({
       where: {
@@ -224,10 +225,10 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const flowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
 
-    return flowNodeInstances;
+    return {flowNodeInstances: flowNodeInstances, totalCount: flowNodeInstances.length};
   }
 
-  public async queryByState(state: FlowNodeInstanceState, offset: number = 0, limit: number = 0): Promise<Array<FlowNodeInstance>> {
+  public async queryByState(state: FlowNodeInstanceState, offset: number = 0, limit: number = 0): Promise<FlowNodeInstanceList> {
 
     const results = await FlowNodeInstanceModel.findAll({
       where: {
@@ -245,10 +246,10 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     });
     const flowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
 
-    return flowNodeInstances;
+    return {flowNodeInstances: flowNodeInstances, totalCount: flowNodeInstances.length};
   }
 
-  public async queryByCorrelation(correlationId: string, offset: number = 0, limit: number = 0): Promise<Array<FlowNodeInstance>> {
+  public async queryByCorrelation(correlationId: string, offset: number = 0, limit: number = 0): Promise<FlowNodeInstanceList> {
 
     const results = await FlowNodeInstanceModel.findAll({
       where: {
@@ -267,10 +268,10 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const flowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
 
-    return flowNodeInstances;
+    return {flowNodeInstances: flowNodeInstances, totalCount: flowNodeInstances.length};
   }
 
-  public async queryByProcessModel(processModelId: string, offset: number = 0, limit: number = 0): Promise<Array<FlowNodeInstance>> {
+  public async queryByProcessModel(processModelId: string, offset: number = 0, limit: number = 0): Promise<FlowNodeInstanceList> {
 
     const results = await FlowNodeInstanceModel.findAll({
       where: {
@@ -289,7 +290,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const flowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
 
-    return flowNodeInstances;
+    return {flowNodeInstances: flowNodeInstances, totalCount: flowNodeInstances.length};
   }
 
   public async queryByCorrelationAndProcessModel(
@@ -297,7 +298,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     processModelId: string,
     offset: number = 0,
     limit: number = 0,
-  ): Promise<Array<FlowNodeInstance>> {
+  ): Promise<FlowNodeInstanceList> {
 
     const results = await FlowNodeInstanceModel.findAll({
       where: {
@@ -314,10 +315,10 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const flowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
 
-    return flowNodeInstances;
+    return {flowNodeInstances: flowNodeInstances, totalCount: flowNodeInstances.length};
   }
 
-  public async querySuspendedByCorrelation(correlationId: string, offset: number = 0, limit: number = 0): Promise<Array<FlowNodeInstance>> {
+  public async querySuspendedByCorrelation(correlationId: string, offset: number = 0, limit: number = 0): Promise<FlowNodeInstanceList> {
 
     const results = await FlowNodeInstanceModel.findAll({
       where: {
@@ -337,10 +338,10 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const flowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
 
-    return flowNodeInstances;
+    return {flowNodeInstances: flowNodeInstances, totalCount: flowNodeInstances.length};
   }
 
-  public async querySuspendedByProcessModel(processModelId: string, offset: number = 0, limit: number = 0): Promise<Array<FlowNodeInstance>> {
+  public async querySuspendedByProcessModel(processModelId: string, offset: number = 0, limit: number = 0): Promise<FlowNodeInstanceList> {
 
     const results = await FlowNodeInstanceModel.findAll({
       where: {
@@ -360,10 +361,10 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const flowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
 
-    return flowNodeInstances;
+    return {flowNodeInstances: flowNodeInstances, totalCount: flowNodeInstances.length};
   }
 
-  public async querySuspendedByProcessInstance(processInstanceId: string, offset: number = 0, limit: number = 0): Promise<Array<FlowNodeInstance>> {
+  public async querySuspendedByProcessInstance(processInstanceId: string, offset: number = 0, limit: number = 0): Promise<FlowNodeInstanceList> {
 
     const results = await FlowNodeInstanceModel.findAll({
       where: {
@@ -383,7 +384,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const flowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
 
-    return flowNodeInstances;
+    return {flowNodeInstances: flowNodeInstances, totalCount: flowNodeInstances.length};
   }
 
   public async queryProcessTokensByProcessInstanceId(processInstanceId: string, offset: number = 0, limit: number = 0): Promise<Array<ProcessToken>> {
@@ -418,7 +419,7 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
     return processTokens;
   }
 
-  public async queryByProcessInstance(processInstanceId: string, offset: number = 0, limit: number = 0): Promise<Array<FlowNodeInstance>> {
+  public async queryByProcessInstance(processInstanceId: string, offset: number = 0, limit: number = 0): Promise<FlowNodeInstanceList> {
 
     const results = await FlowNodeInstanceModel.findAll({
       where: {
@@ -437,13 +438,13 @@ export class FlowNodeInstanceRepository implements IFlowNodeInstanceRepository, 
 
     const flowNodeInstances = results.map<FlowNodeInstance>(this.convertFlowNodeInstanceToRuntimeObject.bind(this));
 
-    return flowNodeInstances;
+    return {flowNodeInstances: flowNodeInstances, totalCount: flowNodeInstances.length};
   }
 
   public async deleteByProcessModelId(processModelId: string): Promise<void> {
 
     const flowNodeInstancesToRemove = await this.queryByProcessModel(processModelId);
-    const flowNodeInstanceIdsToRemove = flowNodeInstancesToRemove.map(((flowNodeInstance: FlowNodeInstance): string => {
+    const flowNodeInstanceIdsToRemove = flowNodeInstancesToRemove.flowNodeInstances.map(((flowNodeInstance: FlowNodeInstance): string => {
       return flowNodeInstance.id;
     }));
 
