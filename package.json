@@ -1,6 +1,6 @@
 {
   "name": "@process-engine/flow_node_instance.repository.sequelize",
-  "version": "10.2.0-beta.3",
+  "version": "10.2.0",
   "description": "Uses sequelize to access and manipulate flow node instance data.",
   "main": "dist/commonjs/index.js",
   "typings": "dist/index.d.ts",
